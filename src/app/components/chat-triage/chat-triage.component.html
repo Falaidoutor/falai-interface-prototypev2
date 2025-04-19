@@ -1,0 +1,20 @@
+<section class="chat-container">
+  <div class="chat-header">FalAI Doutor</div>
+  <div class="chat-messages" #chatMessages>
+    <div *ngFor="let message of messages" [ngClass]="{
+        'message': true,
+        'user-message': message.type === 'user',
+        'ia-message': message.type === 'ia',
+        'contact-message': message.type === 'contact'
+      }">
+      <p *ngIf="message.type === 'ia'">{{ message.text.replace('{{ userName }}', userName) }}</p>
+      <p *ngIf="message.type === 'user' || message.type === 'contact'">{{ message.text }}</p>
+    </div>
+  </div>
+
+  <div class="chat-input input-group">
+    <input [(ngModel)]="userInputValue" type="text" class="form-control" placeholder="Digite sua mensagem..." #userInput>
+    <button class="btn btn-primary" (click)="sendMessage()">Enviar</button>
+  </div>
+
+</section>
