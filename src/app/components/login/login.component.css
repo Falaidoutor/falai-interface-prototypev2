@@ -41,3 +41,27 @@
     font-size: 18px;
 }
 
+.modal-content {
+    background-color: #f8f9fa; 
+    color: #212529;
+    border-radius: 1px;
+  }
+  
+  .modal-header {
+    background-color: #dc3545; 
+
+  }
+  
+  .modal-title {
+    font-weight: 600;
+  }
+  
+  .modal-body p {
+    margin-top: 1vh;
+    color: #444;
+  }
+  
+  .btn-outline-danger {
+    font-weight: 500;
+  }
+  

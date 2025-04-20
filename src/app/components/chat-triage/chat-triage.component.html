@@ -13,8 +13,13 @@
   </div>
 
   <div class="chat-input input-group">
-    <input [(ngModel)]="userInputValue" type="text" class="form-control" placeholder="Digite sua mensagem..." #userInput>
-    <button class="btn btn-primary" (click)="sendMessage()">Enviar</button>
+    <input [(ngModel)]="userInputValue"
+           type="text"
+           class="form-control"
+           placeholder="Digite sua mensagem..."
+           (keydown.enter)="sendMessage()"
+           #userInput>
+    <button class="btn btn-primary" type="button" (click)="sendMessage()">Enviar</button>
   </div>
 
 </section>
