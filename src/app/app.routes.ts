@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { CasesComponent } from './components/cases/cases.component';
-import { TriageResultComponent } from './components/triage-result/triage-result.component';
-import { LoginComponent } from './components/login/login.component';
-import { ChatTriageComponent } from './components/chat-triage/chat-triage.component'
+import { HomeComponent } from './components/patient-components/home/home.component';
+import { TriageResultComponent } from './components/medical-components/triage-result/triage-result.component';
+import { LoginComponent } from './components/patient-components/login/login.component';
+import { ChatTriageComponent } from './components/patient-components/chat-triage/chat-triage.component'
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { TriageCasesComponent } from './components/medical-components/triage-cases/triage-cases.component';
+import { TriageCasesLayoutComponent } from './layouts/triage-cases-layout/triage-cases-layout.component';
 
 export const routes: Routes = [
     {
@@ -17,8 +18,15 @@ export const routes: Routes = [
           { path: "triage/chat", component: ChatTriageComponent}
         ]
       },
-      
-    { path: "cases", component: CasesComponent},
+      {  
+      path: '',
+      component: TriageCasesLayoutComponent, 
+      children: [
+        { path: "medical/cases", component: TriageCasesComponent},
+
+      ]
+    },
+    
     { path: "triage/results", component: TriageResultComponent},
    
 ];
