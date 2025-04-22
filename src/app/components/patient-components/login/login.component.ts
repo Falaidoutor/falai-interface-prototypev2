@@ -1,47 +1,60 @@
-import { Component } from '@angular/core';
+import { Component, Injectable } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../service/authService/auth.service';
+import { AuthResponse } from '../../../models/auth-response';
 
 declare var bootstrap: any;
 
+@Injectable({
+  providedIn: 'root'
+})
+
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 
 export class LoginComponent {
-  cpf: string = '';
-  senhaFila: string = '';
+  cpf = '';
+  senhaFila = '';
 
-  // CPF e senha mockados
-  private cpfMock = '12345678900';
-  private senhaMock = 'senha123';
-
-  constructor(private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   login() {
-    console.log("Teste");
-    if (this.cpf === this.cpfMock && this.senhaFila === this.senhaMock) {
-      this.router.navigate(['/triage/chat']);
-    } else {
-      const modal = new bootstrap.Modal(document.getElementById('loginErrorModal')!);
-      modal.show();
-    }
-  }
-}
-
-  /*login() {
-    const body = { cpf: this.cpf, senhaFila: this.senhaFila };
-
-    this.http.post<any>('/login', body).subscribe({
-      next: () => this.router.navigate(['/chat-triage']),
+    this.authService.login(this.cpf, this.senhaFila).subscribe({
+      next: (res: AuthResponse) => {
+        if (res.authenticated) {
+          this.router.navigate(
+            ['/triage/chat', res.queueTriageId],
+            {
+              state: {
+                patientName: res.patientName,
+                status: res.status
+              }
+            }
+          );
+        } else {
+          this.showErrorModal();
+        }
+      },
       error: () => {
-        const modal = new bootstrap.Modal(document.getElementById('loginErrorModal'));
-        modal.show();
+        this.showErrorModal();
       }
     });
-  }*/
+  }
+
+  private showErrorModal() {
+    const modal = new bootstrap.Modal(
+      document.getElementById('loginErrorModal')!
+    );
+    modal.show();
+  }
+}

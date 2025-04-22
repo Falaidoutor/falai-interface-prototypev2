@@ -7,18 +7,14 @@
         'ia-message': message.type === 'ia',
         'contact-message': message.type === 'contact'
       }">
-      <p *ngIf="message.type === 'ia'">{{ message.text.replace('{{ userName }}', userName) }}</p>
+      <p *ngIf="message.type === 'ia'">{{ message.text.replace('{{ firstName }}', firstName) }}</p>
       <p *ngIf="message.type === 'user' || message.type === 'contact'">{{ message.text }}</p>
     </div>
   </div>
 
   <div class="chat-input input-group">
-    <input [(ngModel)]="userInputValue"
-           type="text"
-           class="form-control"
-           placeholder="Digite sua mensagem..."
-           (keydown.enter)="sendMessage()"
-           #userInput>
+    <input [(ngModel)]="userInputValue" type="text" class="form-control" placeholder="Digite sua mensagem..."
+      (keydown.enter)="sendMessage()" #userInput>
     <button class="btn btn-primary" type="button" (click)="sendMessage()">Enviar</button>
   </div>
 

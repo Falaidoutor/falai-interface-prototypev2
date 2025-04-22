@@ -15,7 +15,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'home', pathMatch: 'full' },
           { path: 'home', component: HomeComponent },
           { path: "triage/login",component: LoginComponent},
-          { path: "triage/chat", component: ChatTriageComponent}
+          { path: "triage/chat/:id", component: ChatTriageComponent}
         ]
       },
       {  

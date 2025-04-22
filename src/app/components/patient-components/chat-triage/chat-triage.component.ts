@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-triage',
@@ -13,15 +14,30 @@ import { FormsModule } from '@angular/forms';
 export class ChatTriageComponent implements AfterViewInit {
   @ViewChild('userInput') userInput!: ElementRef<HTMLInputElement>;
   @ViewChild('chatMessages') chatMessages!: ElementRef<HTMLDivElement>;
+  firstName: string = '';
   
-  userName: string = 'Joao';
+  queueTriageId!: number;
+  patientName!: string;
+  status!: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
+    
+    this.queueTriageId = Number(this.route.snapshot.paramMap.get('id'));
+    const navState = this.router.getCurrentNavigation()?.extras.state;
+    this.patientName = navState?.['patientName'] ?? '';
+    this.status      = navState?.['status']      ?? 5;
+    this.firstName = this.patientName.split(' ')[0];
+  }
 
   ngAfterViewInit(): void {
     console.log('Chat ready:', this.chatMessages);
   }
 
   messages = [
-    { text: 'Olá, {{ userName }}! O que está sentindo?', type: 'ia' },
+    { text: 'Olá, {{ firstName }}! O que está sentindo?', type: 'ia' },
     
   ];
   
