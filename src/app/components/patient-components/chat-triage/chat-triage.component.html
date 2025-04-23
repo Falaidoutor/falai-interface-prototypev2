@@ -1,5 +1,6 @@
 <section class="chat-container">
   <div class="chat-header">FalAI Doutor</div>
+
   <div class="chat-messages" #chatMessages>
     <div *ngFor="let message of messages" [ngClass]="{
         'message': true,
@@ -12,10 +13,17 @@
     </div>
   </div>
 
-  <div class="chat-input input-group">
+  <!-- Input e botão de envio (aparecem somente se o chat não estiver bloqueado) -->
+  <div class="chat-input input-group" *ngIf="!isChatBlocked">
     <input [(ngModel)]="userInputValue" type="text" class="form-control" placeholder="Digite sua mensagem..."
       (keydown.enter)="sendMessage()" #userInput>
+
     <button class="btn btn-primary" type="button" (click)="sendMessage()">Enviar</button>
   </div>
 
+  <!-- Mensagem de status quando o chat está bloqueado -->
+  <div *ngIf="isChatBlocked" class="alert alert-secondary mt-3" role="alert">
+    <span *ngIf="status === 1">A triagem já foi finalizada.</span>
+    <span *ngIf="status === 2">A triagem foi cancelada.</span>
+  </div>
 </section>

@@ -8,36 +8,38 @@
                     <div class="mb-4">
                         <label for="cpf" class="form-label">CPF</label>
                         <input type="text" class="form-control" id="cpf" name="cpf" [(ngModel)]="cpf" required>
-                      </div>
+                    </div>
                     <div class="mb-3">
-                      <label for="senhaFila" class="form-label">Senha da fila</label>
-                      <input type="text" class="form-control" id="senhaFila" name="senhaFila" [(ngModel)]="senhaFila" required>
+                        <label for="senhaFila" class="form-label">Senha da fila</label>
+                        <input type="text" class="form-control" id="senhaFila" name="senhaFila" [(ngModel)]="senhaFila"
+                            required>
                     </div>
                     <div class="mb-3 d-flex justify-content-center">
-                      <button type="submit" class="btn btn-primary">Entrar</button>
+                        <button type="submit" class="btn btn-primary">Entrar</button>
                     </div>
-                  </form>
+                </form>
             </main>
 
             <!-- Modal de Erro -->
 
             <div class="modal fade" id="loginErrorModal">
                 <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg rounded-5">
-                    <div class="modal-header bg-danger text-white rounded-top-4">
-                        <h5 class="modal-title fw-bold" id="loginErrorModalLabel">Erro no login</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <div class="modal-content border-0 shadow-lg rounded-5">
+                        <div class="modal-header bg-danger text-white rounded-top-4">
+                            <h5 class="modal-title fw-bold" id="loginErrorModalLabel">Erro no login</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center p-4">
+                            <p class="mb-0 fs-5">{{ errorMessage }}</p>
+                        </div>
+                        <div class="modal-footer justify-content-center border-0 pb-4">
+                            <button type="button" class="btn btn-outline-danger px-4"
+                                data-bs-dismiss="modal">OK</button>
+                        </div>
                     </div>
-                    <div class="modal-body text-center p-4">
-                        <p class="mb-0 fs-5">CPF ou senha inválidos.
-                        <br>Tente novamente.</p>
-                    </div>
-                    <div class="modal-footer justify-content-center border-0 pb-4">
-                        <button type="button" class="btn btn-outline-danger px-4" data-bs-dismiss="modal">OK</button>
-                    </div>
-                </div>
                 </div>
             </div>
+
         </div>
     </div>
 </main>

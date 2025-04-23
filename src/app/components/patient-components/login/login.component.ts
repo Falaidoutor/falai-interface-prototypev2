@@ -20,6 +20,7 @@ declare var bootstrap: any;
 })
 
 export class LoginComponent {
+  errorMessage: string = ''; 
   cpf = '';
   senhaFila = '';
 
@@ -31,21 +32,43 @@ export class LoginComponent {
   login() {
     this.authService.login(this.cpf, this.senhaFila).subscribe({
       next: (res: AuthResponse) => {
-        if (res.authenticated) {
-          this.router.navigate(
-            ['/triage/chat', res.queueTriageId],
-            {
-              state: {
-                patientName: res.patientName,
-                status: res.status
+        if (!res.authenticated) {
+          this.errorMessage = 'CPF ou senha inválidos';  // Defina a mensagem de erro
+          this.showErrorModal();  // Exiba o modal
+          return;
+        }
+
+        switch (res.status) {
+          case 0: // Em aberto
+            this.router.navigate(
+              ['/triage/chat', res.queueTriageId],
+              {
+                state: {
+                  queueTicket: this.senhaFila,
+                  patientName: res.patientName,
+                  status: res.status
+                }
               }
-            }
-          );
-        } else {
-          this.showErrorModal();
+            );
+            break;
+
+          case 1: // Finalizada
+            this.errorMessage = 'Sua triagem já foi finalizada.';
+            this.showErrorModal();
+            break;
+
+          case 2: // Cancelada
+            this.errorMessage = 'Sua triagem foi cancelada.';
+            this.showErrorModal();
+            break;
+
+          default:
+            this.errorMessage = 'Status desconhecido. Entre em contato com a recepção.';
+            this.showErrorModal();
         }
       },
       error: () => {
+        this.errorMessage = 'Erro de conexão. Tente novamente mais tarde.';
         this.showErrorModal();
       }
     });
