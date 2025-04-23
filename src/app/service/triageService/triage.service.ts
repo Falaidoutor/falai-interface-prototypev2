@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TriageResponse } from '../../models/triage-response';
 
+
 @Injectable({
   providedIn: 'root'
 })

@@ -1,51 +1,50 @@
 <main class="container">
-    <div id="title-div" style="border-bottom: 1px solid black;">
-      <h1 class="page-title">Casos de Pacientes</h1>
-    </div>
-  
-    <section id="filters-div">
-      <!-- Campo de pesquisa -->
-      <div class="row align-items-center mb-3">
-        <div class="col-sm-12">
-          <label for="search-input" class="form-label">Pesquisa por nome:</label>
-          <input type="text" id="search-input" class="form-control"
-                 placeholder="Digite um nome para pesquisar..."
-                 [(ngModel)]="nomeFiltro">
-        </div>
-      </div>
-  
-      <!-- Campo de seleção -->
-      <div class="row align-items-center">
-        <div class="col-sm-12 d-flex" style="height: 4vh;">
-          <label for="category-select" class="mt-1">Filtrar por risco:</label>
-          <select id="category-select" class="form-select mx-2 w-25" [(ngModel)]="riscoFiltro">
-            <option value="">Todos</option>
-            <option value="Urgente">Urgente</option>
-            <option value="Grave">Grave</option>
-            <option value="Moderado">Moderado</option>
-            <option value="Baixo">Baixo</option>
-            <option value="Pouco urgente">Pouco urgente</option>
-            <option value="Não urgente">Não urgente</option>
-          </select>
-          <button class="btn btn-primary" (click)="aplicarFiltro()">Filtrar</button>
-        </div>
-      </div>
-    </section>
-  
-    <!-- Cases -->
-    <div *ngFor="let paciente of pacientesFiltrados" class="case-row mt-3" [style.border-left]="'8px solid ' + getCorRisco(paciente.risco)">
-      <div class="case-details">
-        <p><strong>Nome:</strong> {{ paciente.nome }}</p>
-        <p><strong>Idade:</strong> {{ paciente.idade }} anos</p>
-        <p><strong>Gênero:</strong> {{ paciente.genero }}</p>
-      </div>
-      <div class="case-status">
-        <p><strong>Grau de Risco:</strong> {{ paciente.risco }}</p>
-        <p><strong>Senha da fila:</strong> {{ paciente.senha }}</p>
-      </div>
-      <div class="case-actions">
-        <button class="btn btn-primary">Detalhes</button>
+  <div id="title-div" style="border-bottom: 1px solid black;">
+    <h1 class="page-title">Casos de Pacientes</h1>
+  </div>
+
+  <section id="filters-div">
+    <!-- Campo de pesquisa -->
+    <div class="row align-items-center mb-3">
+      <div class="col-sm-12">
+        <label for="search-input" class="form-label">Pesquisa por nome:</label>
+        <input type="text" id="search-input" class="form-control" placeholder="Digite um nome para pesquisar..."
+          [(ngModel)]="nomeFiltro">
       </div>
     </div>
-  </main>
-  
+
+    <!-- Campo de seleção -->
+    <div class="row align-items-center">
+      <div class="col-sm-12 d-flex" style="height: 4vh;">
+        <label for="category-select" class="mt-1">Filtrar por risco:</label>
+        <select id="category-select" class="form-select mx-2 w-25" [(ngModel)]="riscoFiltro">
+          <option value="">Todos</option>
+          <option value="Urgente">Urgente</option>
+          <option value="Grave">Grave</option>
+          <option value="Moderado">Moderado</option>
+          <option value="Baixo">Baixo</option>
+          <option value="Pouco urgente">Pouco urgente</option>
+          <option value="Não urgente">Não urgente</option>
+        </select>
+        <button class="btn btn-primary" (click)="aplicarFiltro()">Filtrar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cases -->
+  <div *ngFor="let patient of filteredPatient" class="case-row mt-3"
+    [style.border-left]="'8px solid ' + getCorRisco(patient.risk)">
+    <div class="case-details">
+      <p><strong>Nome:</strong> {{ patient.name }}</p>
+      <p><strong>Idade:</strong> {{ patient.age }} anos</p>
+      <p><strong>Gênero:</strong> {{ patient.gender }}</p>
+    </div>
+    <div class="case-status">
+      <p><strong>Grau de Risco:</strong> {{ patient.risk }}</p>
+      <p><strong>Senha da fila:</strong> {{ patient.queueTicket }}</p>
+    </div>
+    <div class="case-actions">
+      <button class="btn btn-primary" [routerLink]="['/medical/cases/detail/', patient.queue_id]">Detalhes</button>
+    </div>
+  </div>
+</main>

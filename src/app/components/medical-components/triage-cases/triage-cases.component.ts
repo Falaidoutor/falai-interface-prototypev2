@@ -1,25 +1,64 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
+import { ResultService } from '../../../service/resultsService/result.service';
+import { PatientResult } from '../../../models/patient-result';
+import { RouterLink } from '@angular/router';
+
 
 @Component({
   selector: 'app-triage-cases',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './triage-cases.component.html',
   styleUrl: './triage-cases.component.css'
 })
-export class TriageCasesComponent {
-  
-  pacientes = [
-    { nome: 'Rodrigo Martins', idade: 56, genero: 'Masculino', risco: 'Urgente', senha: '1324-B' },
-    { nome: 'João Silva', idade: 29, genero: 'Masculino', risco: 'Moderado', senha: '783-U' },
-    { nome: 'Luanna Rodriguez', idade: 34, genero: 'Feminino', risco: 'Baixo', senha: '1325-B' },
-    { nome: 'Renata Maria', idade: 45, genero: 'Feminino', risco: 'Pouco urgente', senha: '2344-C' }
-  ];
-  
-  
-  getCorRisco(risco: string): string {
-    switch (risco.toLowerCase()) {
+export class TriageCasesComponent implements OnInit {
+
+  patients: PatientResult[] = [];
+  filteredPatient: PatientResult[] = [];
+
+  nomeFiltro: string = '';
+  riscoFiltro: string = '';
+
+  constructor(private resultService: ResultService) {}
+
+  ngOnInit(): void {
+    this.resultService.getCases().subscribe({
+      next: (cases) => {
+        this.patients = cases;
+
+        for (let patient of this.patients) {
+          if (patient.gender === 'F') {
+            patient.gender = 'Feminino';
+          } else if (patient.gender === 'M') {
+            patient.gender = 'Masculino';
+          }
+        }
+        
+        this.filteredPatient = [...this.patients];
+        
+        
+      },
+      error: (err) => {
+        console.error('Erro ao carregar triagens:', err);
+      }
+    });
+  }
+
+  aplicarFiltro() {
+    this.filteredPatient = this.patients.filter(p => {
+      const nomeValido = this.nomeFiltro
+        ? p.name.toLowerCase().includes(this.nomeFiltro.toLowerCase())
+        : true;
+      const riscoValido = this.riscoFiltro
+        ? p.risk === this.riscoFiltro
+        : true;
+      return nomeValido && riscoValido;
+    });
+  }
+
+  getCorRisco(risk: string): string {
+    switch (risk.toLowerCase()) {
       case 'urgente': return '#fe0000';
       case 'grave': return '#a30000';
       case 'moderado': return '#ffd900';
@@ -29,25 +68,4 @@ export class TriageCasesComponent {
       default: return '#6c757d';
     }
   }
-
-  // Variáveis de filtro
-  nomeFiltro: string = '';
-  riscoFiltro: string = '';
-
-  pacientesFiltrados: any[] = [...this.pacientes];
-  
-
-aplicarFiltro() {
-  
-  this.pacientesFiltrados = this.pacientes.filter(p => {
-    const nomeValido = this.nomeFiltro
-      ? p.nome.toLowerCase().includes(this.nomeFiltro.toLowerCase())
-      : true;
-    const riscoValido = this.riscoFiltro
-      ? p.risco === this.riscoFiltro
-      : true;
-    return nomeValido && riscoValido;
-  });
-}
-
 }

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TriageResultComponent } from './triage-result.component';
+import { TriageDetailComponent } from './triage-detail.component';
 
-describe('TriageResultComponent', () => {
-  let component: TriageResultComponent;
-  let fixture: ComponentFixture<TriageResultComponent>;
+describe('TriageDetailComponent', () => {
+  let component: TriageDetailComponent;
+  let fixture: ComponentFixture<TriageDetailComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TriageResultComponent]
+      imports: [TriageDetailComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TriageResultComponent);
+    fixture = TestBed.createComponent(TriageDetailComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
