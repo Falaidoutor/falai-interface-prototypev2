@@ -17,6 +17,8 @@ export class ChatTriageComponent implements AfterViewInit {
   @ViewChild('chatMessages') chatMessages!: ElementRef<HTMLDivElement>;
 
   isChatBlocked = false;
+  isLoading = false;
+
   firstName: string = '';
   queueTriageId!: number;
   patientName!: string;
@@ -71,9 +73,12 @@ export class ChatTriageComponent implements AfterViewInit {
     });
     return;
   }
+
+  this.isLoading = true; // ativa o spinner
   
     this.triageService.register(text, this.queueTicket, this.queueTriageId).subscribe({
       next: (response) => {
+        this.isLoading = false;
         this.messages.push({
           text: `${response.risk}\n\n${response.justification}`,
           type: 'ia'
@@ -82,6 +87,7 @@ export class ChatTriageComponent implements AfterViewInit {
       },
       error: (err) => {
         console.error('Erro ao enviar sintomas:', err);
+        this.isLoading = false;
         this.messages.push({
           text: 'Desculpe, ocorreu um erro. Tente novamente mais tarde.',
           type: 'ia'

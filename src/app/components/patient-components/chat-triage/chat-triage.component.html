@@ -11,6 +11,12 @@
       <p *ngIf="message.type === 'ia'">{{ message.text.replace('{{ firstName }}', firstName) }}</p>
       <p *ngIf="message.type === 'user' || message.type === 'contact'">{{ message.text }}</p>
     </div>
+    <!-- Spinner aqui dentro do chat -->
+    <div *ngIf="isLoading" class="d-flex justify-content-center py-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+    </div>
   </div>
 
   <!-- Input e botão de envio (aparecem somente se o chat não estiver bloqueado) -->
