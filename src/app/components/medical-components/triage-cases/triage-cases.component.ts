@@ -63,7 +63,6 @@ export class TriageCasesComponent implements OnInit {
       case 'grave': return '#a30000';
       case 'moderado': return '#ffd900';
       case 'baixo': return '#28a745';
-      case 'pouco urgente':
       case 'não urgente': return '#00e5ff';
       default: return '#6c757d';
     }

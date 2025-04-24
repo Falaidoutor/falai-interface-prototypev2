@@ -28,6 +28,7 @@
     border-radius: 20px;
     font-size: 14px;
     line-height: 1.4;
+    white-space: pre-wrap;
   }
   .user-message {
     background: #1487ff;
