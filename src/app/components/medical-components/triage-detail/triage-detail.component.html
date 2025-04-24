@@ -1,99 +1,57 @@
-<!--Main content-->
-<main class="container mt-4">
+<main class="container mt-5">
 
-    <div id="title-div" style="border-bottom: 1px solid black;">
-        <h1 class="page-title">Dados do caso</h1>
+    <!-- Título -->
+    <div class="border-bottom pb-2 mb-4">
+        <h1 class="fw-bold">Dados do caso</h1>
     </div>
 
-    <!--Case data-->
-    <section class="row">
-        <div class="col-md-7">
-
-            <div class="row mt-3">
-                <div class="col-md-12">
-                    <p style="font-weight: bold;">Senha da fila
-                        <span class="ml-2" style="font-weight: 400;"></span>
-                    </p>
-                </div>
-
-                <div class="col-md-12">
-                    <p style="font-weight: bold;">Data de realização da triagem:
-                        <span class="ml-2" style="font-weight: 400;"></span>
-                    </p>
-                </div>
-                <div class="col-md-12">
-                    <p style="font-weight: bold;">Hora de realização da triagem:
-                        <span class="ml-2" style="font-weight: 400;"></span>
-                    </p>
+    <!-- Dados do Caso -->
+    <section class="mb-5">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Senha da fila:</strong> {{ patient.queueTicket }}</p>
+                        <p class="mb-2"><strong>Data de realização da triagem:</strong> {{ patient.createdAtDate }}</p>
+                        <p><strong>Hora de realização da triagem:</strong> {{ patient.createdAtTime }}</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-
-
-    <!--Personal Data section-->
-    <section class="row" style="margin-top: 5vh;">
-        <div class="col-md-7">
-            <h4 class="mb-2" style="color: #1487ff;">Informações Pessoais</h4>
-
-            <div class="data row mt-4">
-                <div class="col-md-6">
-                    <p class="label">Nome:
-                        <span class="ml-3 value"></span>
-                    </p>
+    <!-- Informações Pessoais -->
+    <section class="mb-5">
+        <h4 class="text-primary mb-3">Informações Pessoais</h4>
+        <div class="card shadow-sm border-0">
+            <div class="card-body row">
+                <div class="col-md-4 mb-3">
+                    <p class="mb-1"><strong>Nome:</strong></p>
+                    <p class="text-muted">{{ patient.name }}</p>
                 </div>
-            </div>
-
-            <div class="data row mt-3">
-                <div class="col-md-6">
-                    <p class="label">Gênero:
-                        <span class="ml-3 value">Masculino</span>
-                    </p>
+                <div class="col-md-4 mb-3">
+                    <p class="mb-1"><strong>Gênero:</strong></p>
+                    <p class="text-muted">{{ patient.gender }}</p>
                 </div>
-            </div>
-
-            <div class="data row mt-3">
-                <div class="col-md-6">
-                    <p class="label">Data de nascimento:
-                        <span class="ml-3 value">20/12/1978</span>
-                    </p>
-                </div>
-                <div class="col-md-6 text-right">
-                    <p class="label">Idade:
-                        <span class="ml-3 value">56 anos</span>
-                    </p>
+                <div class="col-md-4 mb-3">
+                    <p class="mb-1"><strong>Idade:</strong></p>
+                    <p class="text-muted">{{ patient.age }} anos</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!--Triage data -->
-    <section id="triage-data-section">
-        <h4 class="mb-3" style="color: #1487ff;">Dados da Triagem</h4>
+    <!-- Dados da Triagem -->
+    <section>
+        <h4 class="text-primary mb-3">Dados da Triagem</h4>
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Dados enviados pelo paciente</h5>
+                <p class="mb-3">{{ patient.symptoms }}</p>
 
-        <div class="row">
-            <!-- Dados Enviados -->
-            <div class="triage-data col-sm-12 p-3">
-                <h5 class="mb-3" style="color: #000000; font-weight: bolder;">Dados enviados pelo
-                    paciente</h5>
-                <div class="">
-                    <p></p>
-                </div>
-            </div>
-
-            <!-- Dados Recebidos -->
-            <div class="triage-data col-sm-12">
-                <h5 class="mb-3 mt-3" style="color: #000000; font-weight: bolder;"></h5>
-                <div class="p-3">
-                    <p style="font-weight: 550;">Classificação de risco:
-                        <span class="ml-3" style="font-weight: 400;"></span>
-                    </p>
-
-                    <p style="font-weight: 550;">Justificativa:
-                        <span class="ml-3" style="font-weight: 400;"></span>
-                    </p>
-                </div>
+                <p class="mb-2"><strong>Classificação de risco:</strong> <span class="text-muted">{{ patient.risk
+                        }}</span></p>
+                <p><strong>Justificativa:</strong> <span class="text-muted">{{ patient.justification }}</span></p>
             </div>
         </div>
     </section>

@@ -17,7 +17,7 @@ export class ResultService {
     return this.http.get<PatientResult[]>(`${this.apiUrl}/getTriages`);
   }
 
-  getTriageDetail(id:number): Observable<TriageDetail[]> {
-    return this.http.get<TriageDetail[]>(`${this.apiUrl}/getDetails/${id}`);
+  getTriageDetail(id:string): Observable<TriageDetail> {
+    return this.http.get<TriageDetail>(`${this.apiUrl}/getDetails/${id}`);
   }
 }
