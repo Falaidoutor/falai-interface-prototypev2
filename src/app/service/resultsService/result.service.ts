@@ -8,16 +8,16 @@ import { TriageDetail } from '../../models/triage-detail';
   providedIn: 'root'
 })
 export class ResultService {
-  private apiUrl = 'http://localhost:8080/api/triage';
+  private apiUrl = 'http://localhost:8080/api/triages';
 
 
   constructor(private http: HttpClient) { }
 
   getCases(): Observable<PatientResult[]> {
-    return this.http.get<PatientResult[]>(`${this.apiUrl}/getTriages`);
+    return this.http.get<PatientResult[]>(`${this.apiUrl}`);
   }
 
   getTriageDetail(id:string): Observable<TriageDetail> {
-    return this.http.get<TriageDetail>(`${this.apiUrl}/getDetails/${id}`);
+    return this.http.get<TriageDetail>(`${this.apiUrl}/${id}`);
   }
 }

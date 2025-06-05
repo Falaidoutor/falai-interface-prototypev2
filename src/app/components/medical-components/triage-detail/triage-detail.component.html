@@ -22,7 +22,7 @@
 
     <!-- Informações Pessoais -->
     <section class="mb-5">
-        <h4 class="text-primary mb-3">Informações Pessoais</h4>
+        <h4 class="text-primary mb-3"><strong>Informações Pessoais</strong></h4>
         <div class="card shadow-sm border-0">
             <div class="card-body row">
                 <div class="col-md-4 mb-3">
@@ -43,15 +43,15 @@
 
     <!-- Dados da Triagem -->
     <section>
-        <h4 class="text-primary mb-3">Dados da Triagem</h4>
+        <h4 class="text-primary mb-3"><strong>Dados da Triagem</strong></h4>
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Dados enviados pelo paciente</h5>
-                <p class="mb-3">{{ patient.symptoms }}</p>
+                <p class="mb-3 text-muted">{{ patient.symptoms }}</p>
 
-                <p class="mb-2"><strong>Classificação de risco:</strong> <span class="text-muted">{{ patient.risk
+                <p class="mb-2"><strong>Classificação de risco: </strong> <span class="text-muted">{{ patient.risk
                         }}</span></p>
-                <p><strong>Justificativa:</strong> <span class="text-muted">{{ patient.justification }}</span></p>
+                <p><strong>Justificativa: </strong> <span class="text-muted">{{ patient.justification }}</span></p>
             </div>
         </div>
     </section>

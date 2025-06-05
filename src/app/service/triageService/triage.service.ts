@@ -13,7 +13,7 @@ export class TriageService {
   constructor(private http: HttpClient) {}
 
   register(symptoms: string, queueTicket: string, queueId: number): Observable<TriageResponse> {
-     return this.http.post<TriageResponse>(`${this.apiUrl}/register`, { symptoms,
+     return this.http.post<TriageResponse>(`${this.apiUrl}/chat`, { symptoms,
       queueTicket,
       queueId });
   }
