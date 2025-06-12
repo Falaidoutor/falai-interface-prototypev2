@@ -5,7 +5,7 @@
 
   <section id="filters-div">
     <!-- Campo de pesquisa -->
-    <div class="row align-items-center mb-3">
+    <div class="row align-items-center mb-3" style="width: 30vw;">
       <div class="col-sm-12">
         <label for="search-input" class="form-label">Pesquisa por nome:</label>
         <input type="text" id="search-input" class="form-control" placeholder="Digite um nome para pesquisar..."
@@ -14,10 +14,12 @@
     </div>
 
     <!-- Campo de seleção -->
-    <div class="row align-items-center">
-      <div class="col-sm-12 d-flex" style="height: 4vh;">
-        <label for="category-select" class="mt-1">Filtrar por risco:</label>
-        <select id="category-select" class="form-select mx-2 w-25" [(ngModel)]="riscoFiltro">
+    <!-- Campo de seleção + Botão adicionar paciente -->
+    <div class="row align-items-center mb-3">
+      <!-- Filtros à esquerda -->
+      <div class="col d-flex align-items-center">
+        <label for="category-select" class="mt-1 me-2">Filtrar por risco:</label>
+        <select id="category-select" class="form-select me-2 w-25" [(ngModel)]="riscoFiltro">
           <option value="">Todos</option>
           <option value="Urgente">Urgente</option>
           <option value="Grave">Grave</option>
@@ -26,6 +28,11 @@
           <option value="Não urgente">Não urgente</option>
         </select>
         <button class="btn btn-primary" (click)="aplicarFiltro()">Filtrar</button>
+      </div>
+
+      <!-- Botão à direita -->
+      <div class="col text-end">
+        <button class="btn btn-primary" [routerLink]="['/medical/cases/create']">+ Adicionar paciente</button>
       </div>
     </div>
   </section>

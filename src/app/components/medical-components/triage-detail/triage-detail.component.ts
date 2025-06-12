@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { ResultService } from '../../../service/resultsService/result.service';
 import { TriageDetail } from '../../../models/triage-detail';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
   selector: 'app-triage-detail',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './triage-detail.component.html',
   styleUrl: './triage-detail.component.css'
 })

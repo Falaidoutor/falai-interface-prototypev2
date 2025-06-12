@@ -6,6 +6,8 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout.component
 import { TriageCasesComponent } from './components/medical-components/triage-cases/triage-cases.component';
 import { TriageCasesLayoutComponent } from './layouts/triage-cases-layout/triage-cases-layout.component';
 import { TriageDetailComponent } from './components/medical-components/triage-detail/triage-detail.component';
+import { AddPatientComponent } from './components/medical-components/add-patient/add-patient.component';
+import { AddPatientToQueueComponent } from './components/medical-components/add-patient-to-queue/add-patient-to-queue.component';
 
 export const routes: Routes = [
     {
@@ -23,7 +25,9 @@ export const routes: Routes = [
       component: TriageCasesLayoutComponent, 
       children: [
         { path: "medical/cases", component: TriageCasesComponent},
-        { path: 'medical/cases/detail/:id', component: TriageDetailComponent }
+        { path: 'medical/cases/detail/:id', component: TriageDetailComponent },
+        { path: 'medical/cases/create', component: AddPatientComponent },
+        { path: 'medical/cases/add-queue', component: AddPatientToQueueComponent },
 
 
       ]

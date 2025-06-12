@@ -1,0 +1,20 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #fdfdfd;
+}
+
+#title-div{
+    margin-top: 5vh;
+    margin-bottom: 4vh;
+}
+
+.page-title {
+    margin-bottom: 1vw;
+    font-size: 250%;
+    font-weight: bold;
+    color: #1487ff;
+    text-align: left;  
+}
