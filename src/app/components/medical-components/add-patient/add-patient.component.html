@@ -7,7 +7,7 @@
     <!-- Botões -->
     <div class="row mt-4">
         <div class="col text-end">
-            <button type="submit" class="btn btn-primary">+ Adicionar paciente existente à fila</button>
+            <a class="btn btn-primary" routerLink="/medical/cases/add-queue">+ Adicionar paciente existente à fila</a>
         </div>
     </div>
 
@@ -55,7 +55,10 @@
 
 
         <!-- Botões -->
-        <div class="row mt-4">
+        <div class="row mt-5">
+            <div class="col-sm-2">
+                <a class="btn btn-secondary" style="width: 4vw;" routerLink="/medical/cases">Voltar</a>
+            </div>
             <div class="col text-end">
                 <button type="submit" class="btn btn-primary" [disabled]="!pacienteForm.form.valid">Cadastrar</button>
             </div>

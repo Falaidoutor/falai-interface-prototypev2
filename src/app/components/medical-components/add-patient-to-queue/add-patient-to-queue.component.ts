@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common';
 import { PatientService } from '../../../service/patientService/patient.service'; 
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Patient } from '../../../models/patient';
 declare var bootstrap: any; 
 
 @Component({
   selector: 'app-add-patient-to-queue',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './add-patient-to-queue.component.html',
   styleUrl: './add-patient-to-queue.component.css'
 })

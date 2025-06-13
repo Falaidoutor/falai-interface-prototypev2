@@ -3,13 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Patient } from '../../../models/patient';
 import { PatientService } from '../../../service/patientService/patient.service'; 
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 declare var bootstrap: any; 
 
 
 @Component({
   selector: 'app-add-patient',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './add-patient.component.html',
   styleUrl: './add-patient.component.css'
 })
