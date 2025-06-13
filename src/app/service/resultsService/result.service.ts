@@ -20,4 +20,8 @@ export class ResultService {
   getTriageDetail(id:string): Observable<TriageDetail> {
     return this.http.get<TriageDetail>(`${this.apiUrl}/${id}`);
   }
+
+  enviarNovaTriagem(id: string, triagem: { analise: string, status: string }) {
+  return this.http.post(`/api/triagens/${id}/nova-analise`, triagem);
+}
 }

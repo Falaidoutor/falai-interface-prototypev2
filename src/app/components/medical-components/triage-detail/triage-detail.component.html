@@ -2,7 +2,7 @@
 
     <!-- Título -->
     <div class="border-bottom pb-2 mb-4">
-        <h1 class="fw-bold">Dados do caso</h1>
+        <h1 class="page-title">Dados do caso</h1>
     </div>
 
     <!-- Dados do Caso -->
@@ -43,10 +43,19 @@
 
     <!-- Dados da Triagem -->
     <section>
-        <h4 class="text-primary mb-3"><strong>Dados da Triagem</strong></h4>
+
+        <div class="row mt-4 mb-3 align-items-center">
+            <div class="col">
+                <h4 class="text-primary m-0"><strong>Dados da Triagem</strong></h4>
+            </div>
+            <div class="col-auto text-end">
+                <a class="btn btn-primary" (click)="abrirModal()">Adicionar triagem</a>
+            </div>
+        </div>
+
         <div class="card shadow-sm border-0">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Dados enviados pelo paciente</h5>
+                <h5 class="fw-bold mb-3">Dados enviados pelo paciente: </h5>
                 <p class="mb-3 text-muted">{{ patient.symptoms }}</p>
 
                 <p class="mb-2"><strong>Classificação de risco: </strong> <span class="text-muted">{{ patient.risk
@@ -56,4 +65,68 @@
         </div>
     </section>
 
+
+    <!-- Modal -->
+    <div class="modal fade show d-block" *ngIf="modalAberto" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Análise da Triagem</h5>
+                    <button type="button" class="btn-close" (click)="fecharModal()"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form #triagemForm="ngForm" (ngSubmit)="enviarTriagem()">
+
+                        <!-- Análise -->
+                        <div class="mb-3">
+                            <label for="analise" class="form-label">Análise</label>
+                            <textarea id="analise" class="form-control" [(ngModel)]="triagem.analise" name="analise"
+                                required></textarea>
+                        </div>
+
+                        <!-- Select de status -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select id="status" class="form-select" [(ngModel)]="triagem.status" name="status" required>
+                                <option value="" disabled>Selecione o status</option>
+                                <option *ngFor="let s of statusDisponiveis" [value]="s">{{ s }}</option>
+                            </select>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" (click)="fecharModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary"
+                                [disabled]="triagemForm.invalid">Enviar</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de sucesso -->
+    <div class="modal fade show d-block" *ngIf="modalSucesso" style="background: rgba(0,0,0,0.3); z-index: 1060;">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content text-center p-3">
+                <h5 class="text-success">Sucesso!</h5>
+                <p>Triagem enviada com sucesso.</p>
+                <button class="btn btn-success" (click)="fecharModalSucesso()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de erro -->
+    <div class="modal fade show d-block" *ngIf="modalErro" style="background: rgba(0,0,0,0.3); z-index: 1060;">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content text-center p-3">
+                <h5 class="text-danger">Erro!</h5>
+                <p>Ocorreu um erro ao enviar a triagem.</p>
+                <button class="btn btn-danger" (click)="fecharModalErro()">OK</button>
+            </div>
+        </div>
+    </div>
 </main>
