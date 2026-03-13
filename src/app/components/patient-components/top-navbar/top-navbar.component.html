@@ -1,23 +1,40 @@
-<!--Header routerLink="" routerLinkActive="active" class="nav-link" style="color: #1487ff-->
-<nav id="nav-top" class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" routerLink="" style="color: #1487ff">FalAI Doutor</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="assets/img/home/logo.png" alt="FalAI Doutor" class="brand-logo me-2">
+      <span class="brand-text">Fal<span class="ai-text">AI</span> Doutor</span>
+    </a>
 
-        <div id="div-links" class="collapse navbar-collapse">
-            <ul class="links navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a routerLink="" routerLinkActive="active-link" class="nav-link">Home</a>
-                </li>
-                <!-- <li class=" nav-item">
-                    <a href="#" routerLinkActive="active-link" class="nav-link">*Em construção*</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" routerLinkActive="active-link" class="nav-link">*Em construção*</a>
-                </li> -->
-                <li class="nav-item">
-                    <a routerLink="/triage/login" routerLinkActive="active-link" class="nav-link">Triagem</a>
-                </li>
-            </ul>
-        </div>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item">
+          <a class="nav-link active" routerLink="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/triage">Triagem</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/about">Sobre Nós</a>
+        </li>
+        <li class="nav-item">
+          <a class="btn-login" routerLink="/login">Login</a>
+        </li>
+      </ul>
     </div>
+  </div>
 </nav>
+
+<!-- spacer para evitar sobreposição do conteúdo -->
+<div class="navbar-spacer" aria-hidden="true"></div>

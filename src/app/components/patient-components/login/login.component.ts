@@ -38,7 +38,7 @@ export class LoginComponent {
           return;
         }
 
-        switch (res.status) {
+        switch (res.statusId) {
           case 0: // Em aberto
             this.router.navigate(
               ['/triage/chat', res.queueTriageId],
@@ -46,7 +46,7 @@ export class LoginComponent {
                 state: {
                   queueTicket: this.senhaFila,
                   patientName: res.patientName,
-                  status: res.status
+                  status: res.statusId
                 }
               }
             );

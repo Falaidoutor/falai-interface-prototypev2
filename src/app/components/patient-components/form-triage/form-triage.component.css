@@ -1,0 +1,72 @@
+/* Centraliza o layout na página */
+.center-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f5f7fa;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  gap: 1.2rem;
+  padding: 2rem;
+  border: 2px solid #0d6efd;
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+h2 {
+  color: #0d6efd;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #1487ff;
+}
+
+
+.form-group, .sintoma {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dados-basicos {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  flex: 1;
+  font-weight: 500;
+}
+
+input[type="range"] {
+  flex: 2;
+  accent-color: #1487ff;
+}
+
+button {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #0d6efd;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #1487ff;
+}
