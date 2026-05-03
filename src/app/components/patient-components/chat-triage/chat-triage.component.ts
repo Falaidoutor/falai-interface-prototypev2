@@ -80,7 +80,7 @@ export class ChatTriageComponent implements AfterViewInit {
       next: (response) => {
         this.isLoading = false;
         this.messages.push({
-          text: `Classificação de Risco: ${response.risk}\n\nJustificativa: ${response.justification}`,
+          text: `Classificação de Risco: ${response.classificacao}\n\nJustificativa: ${response.justificativa}`,
           type: 'ia'
         });
         this.status = 1;

@@ -21,11 +21,11 @@
         <label for="category-select" class="mt-1 me-2">Filtrar por risco:</label>
         <select id="category-select" class="form-select me-2 w-25" [(ngModel)]="riscoFiltro">
           <option value="">Todos</option>
-          <option value="Urgente">Urgente</option>
-          <option value="Grave">Grave</option>
-          <option value="Moderado">Moderado</option>
-          <option value="Baixo">Baixo</option>
-          <option value="Não urgente">Não urgente</option>
+          <option value="ESI-1">ESI-1</option>
+          <option value="ESI-2">ESI-2</option>
+          <option value="ESI-3">ESI-3</option>
+          <option value="ESI-4">ESI-4</option>
+          <option value="ESI-5">ESI-5</option>
         </select>
         <button class="btn btn-primary" (click)="aplicarFiltro()">Filtrar</button>
       </div>
@@ -39,18 +39,18 @@
 
   <!-- Cases -->
   <div *ngFor="let patient of filteredPatient" class="case-row mt-3"
-    [style.border-left]="'8px solid ' + getCorRisco(patient.risk)">
+    [style.border-left]="'8px solid ' + getCorRisco(patient.classificacao)">
     <div class="case-details">
       <p><strong>Nome:</strong> {{ patient.name }}</p>
       <p><strong>Idade:</strong> {{ patient.age }} anos</p>
       <p><strong>Gênero:</strong> {{ patient.gender }}</p>
     </div>
     <div class="case-status">
-      <p><strong>Grau de Risco:</strong> {{ patient.risk }}</p>
+      <p><strong>Grau de Risco:</strong> {{ patient.classificacao }}</p>
       <p><strong>Senha da fila:</strong> {{ patient.queueTicket }}</p>
     </div>
     <div class="case-actions">
-      <button class="btn btn-primary" [routerLink]="['/medical/cases/detail/', patient.queue_id]">Detalhes</button>
+      <button class="btn btn-primary" [routerLink]="['/medical/cases/detail/', patient.queueId]">Detalhes</button>
     </div>
   </div>
 </main>

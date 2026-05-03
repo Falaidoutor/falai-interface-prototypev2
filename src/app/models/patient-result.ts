@@ -1,8 +1,9 @@
 export interface PatientResult {
-    queue_id: number;
+    queueId: number;
     name: string;
     age: number; 
     gender: string; 
-    risk: string; 
+    classificacao: string;
+    prioridade: string;
     queueTicket: string;
 }

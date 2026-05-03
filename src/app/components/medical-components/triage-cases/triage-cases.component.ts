@@ -51,7 +51,7 @@ export class TriageCasesComponent implements OnInit {
         ? p.name.toLowerCase().includes(this.nomeFiltro.toLowerCase())
         : true;
       const riscoValido = this.riscoFiltro
-        ? p.risk === this.riscoFiltro
+        ? p.classificacao === this.riscoFiltro
         : true;
       return nomeValido && riscoValido;
     });
@@ -59,11 +59,11 @@ export class TriageCasesComponent implements OnInit {
 
   getCorRisco(risk: string): string {
     switch (risk.toLowerCase()) {
-      case 'urgente': return '#fe0000';
-      case 'grave': return '#a30000';
-      case 'moderado': return '#ffd900';
-      case 'baixo': return '#28a745';
-      case 'não urgente': return '#00e5ff';
+      case 'esi-1': return '#a30000';
+      case 'esi-2': return '#fe0000';
+      case 'esi-3': return '#ffd900';
+      case 'esi-4': return '#28a745';
+      case 'esi-5': return '#00e5ff';
       default: return '#6c757d';
     }
   }
