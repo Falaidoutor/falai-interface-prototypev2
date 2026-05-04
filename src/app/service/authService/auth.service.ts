@@ -13,7 +13,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  // FunÃ§Ã£o para fazer o login
+  // Função para fazer o login
   login(cpf: string, queueTicket: string): Observable<AuthResponse> {
     const params = new HttpParams()
       .set('cpf', cpf)
@@ -22,4 +22,5 @@ export class AuthService {
     return this.http.get<AuthResponse>(`${API_HOST}${this.endpoint}`, { params });
   }
 }
+
 
