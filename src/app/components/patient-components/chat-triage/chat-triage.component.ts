@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+﻿import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ export class ChatTriageComponent implements AfterViewInit {
     this.status = navState?.['status'];
     this.queueTicket = navState?.['queueTicket']
     this.firstName = this.patientName.split(' ')[0];
-    this.isChatBlocked = this.status === 1 || this.status === 2;
+    this.isChatBlocked = this.status === 1 || this.status === 3;
   }
 
   ngAfterViewInit(): void {
@@ -44,7 +44,7 @@ export class ChatTriageComponent implements AfterViewInit {
   }
 
   messages = [
-    { text: 'Olá, {{ firstName }}! O que está sentindo?', type: 'ia' },
+    { text: 'OlÃ¡, {{ firstName }}! O que estÃ¡ sentindo?', type: 'ia' },
     
   ];
   
@@ -62,11 +62,11 @@ export class ChatTriageComponent implements AfterViewInit {
     
   if (this.status === 1) {
     this.messages.push({
-      text: 'Sua triagem já foi finalizada!',
+      text: 'Sua triagem jÃ¡ foi finalizada!',
       type: 'ia'
     });
     return;
-  } else if (this.status === 2) {
+  } else if (this.status === 3) {
     this.messages.push({
       text: 'Sua triagem foi cancelada.',
       type: 'ia'
@@ -80,7 +80,7 @@ export class ChatTriageComponent implements AfterViewInit {
       next: (response) => {
         this.isLoading = false;
         this.messages.push({
-          text: `Classificação de Risco: ${response.classificacao}\n\nJustificativa: ${response.justificativa}`,
+          text: `ClassificaÃ§Ã£o de Risco: ${response.classificacao}\n\nJustificativa: ${response.justificativa}`,
           type: 'ia'
         });
         this.status = 1;
@@ -97,3 +97,4 @@ export class ChatTriageComponent implements AfterViewInit {
   }
   
 }
+

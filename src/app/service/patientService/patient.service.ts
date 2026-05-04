@@ -1,4 +1,4 @@
-import { Patient } from '../../models/patient';
+﻿import { Patient } from '../../models/patient';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -20,3 +20,4 @@ export class PatientService {
     return this.http.post<Patient>(`${API_HOST}${this.endpoint}patients`, paciente);
   }
 }
+

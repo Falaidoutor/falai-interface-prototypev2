@@ -1,4 +1,4 @@
-import { Component, Injectable } from '@angular/core';
+﻿import { Component, Injectable } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -33,42 +33,42 @@ export class LoginComponent {
     this.authService.login(this.cpf, this.senhaFila).subscribe({
       next: (res: AuthResponse) => {
         if (!res.authenticated) {
-          this.errorMessage = 'CPF ou senha inválidos';  // Defina a mensagem de erro
+          this.errorMessage = 'CPF ou senha invÃ¡lidos';  // Defina a mensagem de erro
           this.showErrorModal();  // Exiba o modal
           return;
         }
 
-        switch (res.status) {
-          case 0: // Em aberto
+        switch (res.statusId) {
+          case 2: // Aguardando
             this.router.navigate(
               ['/triage/chat', res.queueTriageId],
               {
                 state: {
                   queueTicket: this.senhaFila,
                   patientName: res.patientName,
-                  status: res.status
+                  status: res.statusId
                 }
               }
             );
             break;
 
           case 1: // Finalizada
-            this.errorMessage = 'Sua triagem já foi finalizada.';
+            this.errorMessage = 'Sua triagem jÃ¡ foi finalizada.';
             this.showErrorModal();
             break;
 
-          case 2: // Cancelada
+          case 3: // Cancelada
             this.errorMessage = 'Sua triagem foi cancelada.';
             this.showErrorModal();
             break;
 
           default:
-            this.errorMessage = 'Status desconhecido. Entre em contato com a recepção.';
+            this.errorMessage = 'Status desconhecido. Entre em contato com a recepÃ§Ã£o.';
             this.showErrorModal();
         }
       },
       error: () => {
-        this.errorMessage = 'Erro de conexão. Tente novamente mais tarde.';
+        this.errorMessage = 'Erro de conexÃ£o. Tente novamente mais tarde.';
         this.showErrorModal();
       }
     });
