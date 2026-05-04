@@ -16,6 +16,6 @@ export class TriageService {
   register(symptoms: string, queueTicket: string, queueId: number): Observable<TriageResponse> {
      return this.http.post<TriageResponse>(`${API_HOST}${this.endpoint}/chat`, { symptoms,
       queueTicket,
-      queueId });
+      queueId: String(queueId) });
   }
 }
