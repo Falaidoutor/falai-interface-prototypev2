@@ -1,7 +1,10 @@
 ﻿<!--Header routerLink="" routerLinkActive="active" class="nav-link" style="color: #1487ff-->
 <nav id="nav-top" class="navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand" routerLink="">FalAI Doutor</a>
+        <a class="navbar-brand" routerLink="/home">
+            <span class="brand-mark" aria-hidden="true">+</span>
+            <span>FALAI DOUTOR</span>
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#div-links"
             aria-controls="div-links" aria-expanded="false" aria-label="Alternar navegação">
@@ -11,19 +14,16 @@
         <div id="div-links" class="collapse navbar-collapse">
             <ul class="links navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a routerLink="" routerLinkActive="active-link" class="nav-link">Home</a>
+                    <a routerLink="/home" routerLinkActive="active-link" class="nav-link">Home</a>
                 </li>
-                <!-- <li class=" nav-item">
-                    <a href="#" routerLinkActive="active-link" class="nav-link">*Em construção*</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" routerLinkActive="active-link" class="nav-link">*Em construção*</a>
-                </li> -->
                 <li class="nav-item">
                     <a routerLink="/triage/login" routerLinkActive="active-link" class="nav-link">Triagem</a>
                 </li>
                 <li class="nav-item">
-                    <a routerLink="/medical/cases" routerLinkActive="active-link" class="nav-link">Área médica</a>
+                    <a routerLink="/medical/cases" routerLinkActive="active-link" class="nav-link">&Aacute;rea M&eacute;dica</a>
+                </li>
+                <li class="nav-item">
+                    <a routerLink="/about" routerLinkActive="active-link" class="nav-link">Sobre N&oacute;s</a>
                 </li>
             </ul>
             <button class="theme-toggle" type="button" (click)="themeService.toggleTheme()"

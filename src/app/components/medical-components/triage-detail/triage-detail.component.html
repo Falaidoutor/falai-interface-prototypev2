@@ -48,7 +48,10 @@
             <div class="col">
                 <h4 class="text-primary m-0"><strong>Dados da Triagem</strong></h4>
             </div>
-            <div class="col-auto text-end">
+            <div class="col-auto text-end triage-actions">
+                <button class="btn btn-danger" type="button" (click)="excluirTriagem()" [disabled]="excluindoTriagem">
+                    {{ excluindoTriagem ? 'Excluindo...' : 'Excluir Triagem' }}
+                </button>
                 <a class="btn btn-primary" (click)="abrirModal()">Revisar triagem</a>
             </div>
         </div>
@@ -126,6 +129,17 @@
                 <h5 class="text-danger">Erro!</h5>
                 <p>Ocorreu um erro ao enviar a triagem.</p>
                 <button class="btn btn-danger" (click)="fecharModalErro()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de erro na exclusão -->
+    <div class="modal fade show d-block" *ngIf="modalExclusaoErro" style="background: rgba(0,0,0,0.3); z-index: 1060;">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content text-center p-3">
+                <h5 class="text-danger">Erro!</h5>
+                <p>Ocorreu um erro ao excluir a triagem.</p>
+                <button class="btn btn-danger" (click)="fecharModalExclusaoErro()">OK</button>
             </div>
         </div>
     </div>

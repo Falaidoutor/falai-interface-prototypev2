@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { ResultService } from '../../../service/resultsService/result.service';
 import { TriageDetail } from '../../../models/triage-detail';
-import { ActivatedRoute } from '@angular/router';
-import { BrowserModule } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface NovaTriagem {
   analise: string;
@@ -35,7 +34,8 @@ export class TriageDetailComponent implements OnInit {
 
   constructor(
     private resultService: ResultService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +79,8 @@ export class TriageDetailComponent implements OnInit {
 
   modalSucesso = false;
   modalErro = false;
+  modalExclusaoErro = false;
+  excluindoTriagem = false;
 
   enviarTriagem(): void {
     if (!this.triagem.analise || !this.triagem.status) {
@@ -109,5 +111,33 @@ export class TriageDetailComponent implements OnInit {
 
   fecharModalErro() {
     this.modalErro = false;
+  }
+
+  excluirTriagem(): void {
+    if (this.excluindoTriagem) {
+      return;
+    }
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.modalExclusaoErro = true;
+      return;
+    }
+
+    this.excluindoTriagem = true;
+    this.resultService.deleteTriage(id).subscribe({
+      next: () => {
+        this.router.navigate(['/medical/cases']);
+      },
+      error: (err) => {
+        console.error('Erro ao excluir triagem:', err);
+        this.excluindoTriagem = false;
+        this.modalExclusaoErro = true;
+      }
+    });
+  }
+
+  fecharModalExclusaoErro(): void {
+    this.modalExclusaoErro = false;
   }
 }

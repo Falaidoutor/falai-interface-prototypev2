@@ -31,6 +31,12 @@ textarea.form-control {
     min-height: 140px;
 }
 
+.triage-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
 @media (max-width: 767px) {
     main.container {
         width: min(100% - 24px, 540px);
@@ -59,6 +65,11 @@ textarea.form-control {
     a.btn,
     button.btn {
         width: 100%;
+    }
+
+    .triage-actions {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .modal-dialog {

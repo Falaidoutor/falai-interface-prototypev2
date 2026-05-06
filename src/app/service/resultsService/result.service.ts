@@ -26,4 +26,8 @@ export class ResultService {
   enviarNovaTriagem(id: string, triagem: { analise: string, status: string }) {
   return this.http.post(`${API_HOST}${this.novaAnaliseEndpoint}/${id}/nova-analise`, triagem);
 }
+
+  deleteTriage(queueId: string): Observable<void> {
+    return this.http.delete<void>(`${API_HOST}${this.endpoint}/${queueId}`);
+  }
 }
