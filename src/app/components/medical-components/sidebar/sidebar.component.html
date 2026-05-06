@@ -1,9 +1,14 @@
-<!--Sidebar-->
+﻿<!--Sidebar-->
 <aside class="col-sm-2 sidebar">
-    <p class="sidebar-brand ml-1" style="color: #1487ff; margin-left: 10px;">FalAI Doutor</p>
+    <a class="sidebar-brand ml-1" routerLink="/home">FalAI Doutor</a>
     <div>
         <a routerLink="/medical/cases">Casos</a>
-        <a routerLink="/medical/cases/create">Criar paciente (Em construção)</a>
+        <a routerLink="/medical/cases/create">Gerenciamento de pacientes</a>
         <a routerLink="/medical/cases/add-queue">Adicionar paciente na fila (Em construção)</a>
     </div>
+    <button class="theme-toggle" type="button" (click)="themeService.toggleTheme()"
+        [attr.aria-pressed]="themeService.isDarkMode"
+        [attr.aria-label]="themeService.isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'">
+        <span aria-hidden="true">{{ themeService.isDarkMode ? '☀' : '☾' }}</span>
+    </button>
 </aside>

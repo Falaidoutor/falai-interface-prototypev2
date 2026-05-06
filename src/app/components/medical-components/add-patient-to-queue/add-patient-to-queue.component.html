@@ -1,6 +1,6 @@
-<main class="container">
+﻿<main class="container">
     <!-- Título da página -->
-    <div id="title-div" style="border-bottom: 1px solid black;">
+    <div id="title-div">
         <h1 class="page-title">Adicionar paciente na fila</h1>
     </div>
 
@@ -19,7 +19,7 @@
 
             <!-- Resultado da busca -->
             <div *ngIf="pacienteEncontrado" class="mt-4">
-                <h5 style="color: #1487ff;">Paciente Encontrado:</h5>
+                <h5 class="patient-found-title">Paciente Encontrado:</h5>
                 <p><strong>Nome: </strong> {{ pacienteEncontrado.name }}</p>
                 <p><strong>Idade: </strong> {{ pacienteEncontrado.age }} anos</p>
                 <p><strong>Gênero: </strong> {{ pacienteEncontrado.gender }}</p>

@@ -1,0 +1,37 @@
+<main class="login-page">
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="brand-mark" aria-hidden="true">FD</div>
+    <h1 id="login-title">FalAI Doutor</h1>
+    <p class="login-subtitle">Acesse o sistema para continuar</p>
+
+    <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+      <div class="form-field">
+        <label for="username">Nome de usuário</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          [(ngModel)]="username"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="password">Senha</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          required
+        >
+      </div>
+
+      <p class="error-message" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+
+      <button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+    </form>
+  </section>
+</main>

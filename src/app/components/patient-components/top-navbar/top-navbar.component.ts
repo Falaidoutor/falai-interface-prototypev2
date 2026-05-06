@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { ThemeService } from '../../../service/themeService/theme.service';
 
 @Component({
   selector: 'app-top-navbar',
@@ -8,5 +9,5 @@ import { RouterModule } from '@angular/router';
   styleUrl: './top-navbar.component.css'
 })
 export class TopNavbarComponent {
-
+  constructor(public themeService: ThemeService) {}
 }

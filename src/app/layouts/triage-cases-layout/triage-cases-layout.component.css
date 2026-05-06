@@ -1,0 +1,23 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background-color: var(--color-bg-soft);
+}
+
+.content {
+    margin-left: 220px;
+    padding: 1px 0 3rem;
+}
+
+@media (max-width: 991px) {
+    .content {
+        margin-left: 0;
+        padding: 0 0 6rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .content {
+        background-color: var(--color-bg-soft);
+    }
+}

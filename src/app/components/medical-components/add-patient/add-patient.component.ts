@@ -1,11 +1,9 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; 
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Patient } from '../../../models/patient';
-import { PatientService } from '../../../service/patientService/patient.service'; 
-import { Router, RouterModule } from '@angular/router';
-declare var bootstrap: any; 
-
+import { PatientPayload, PatientService } from '../../../service/patientService/patient.service';
 
 @Component({
   selector: 'app-add-patient',
@@ -13,111 +11,207 @@ declare var bootstrap: any;
   templateUrl: './add-patient.component.html',
   styleUrl: './add-patient.component.css'
 })
+export class AddPatientComponent implements OnInit {
+  patients: Patient[] = [];
+  patient: PatientPayload = this.createEmptyPatient();
+  searchTerm = '';
+  selectedPatientId: number | null = null;
+  isLoading = false;
+  isSaving = false;
+  deletingPatientId: number | null = null;
+  feedbackMessage = '';
+  feedbackType: 'success' | 'danger' | '' = '';
 
-export class AddPatientComponent {
+  constructor(private patientService: PatientService) {}
 
-    patient: Patient = {
-        name: '',
-        age: 0,
-        gender: '',
-        queueTicket: '',
-        cpf: ''
-};
-
-  successModal: any;
-  errorModal: any;
-  enableQueue: boolean = false;
-  mensagemModal: string = '';
-
-constructor(
-    private patientService: PatientService,
-    private router: Router
-  ) {}
-
-  ngAfterViewInit() {
-    this.successModal = new bootstrap.Modal(document.getElementById('successModal'));
-    this.errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+  ngOnInit(): void {
+    this.loadPatients();
   }
 
+  get filteredPatients(): Patient[] {
+    const normalizedSearch = this.searchTerm.trim().toLowerCase();
+    const cpfSearch = this.searchTerm.replace(/\D/g, '');
 
-cadastrarPaciente(): void {
-    if (!this.patient.name || !this.patient.age || this.patient.age < 0 || !this.patient.gender || !this.patient.cpf) {
-      console.warn('Preencha todos os campos obrigatórios.');
+    if (!normalizedSearch) {
+      return this.patients;
+    }
+
+    return this.patients.filter((patient) =>
+      patient.name.toLowerCase().includes(normalizedSearch) ||
+      (cpfSearch.length > 0 && patient.cpf.includes(cpfSearch))
+    );
+  }
+
+  get isEditing(): boolean {
+    return this.selectedPatientId !== null;
+  }
+
+  loadPatients(): void {
+    this.isLoading = true;
+    this.patientService.getPatients().subscribe({
+      next: (patients) => {
+        this.patients = patients;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.showFeedback('Erro ao carregar pacientes.', 'danger');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  savePatient(): void {
+    if (!this.isValidPatient()) {
+      this.showFeedback('Preencha nome, CPF, idade e gênero.', 'danger');
       return;
     }
 
-    console.log('Enviando paciente:', this.patient.name);
-    this.patient.cpf = this.patient.cpf.replace(/\D/g, '')
+    const payload = this.toPayload(this.patient);
+    this.isSaving = true;
 
-    //Fluxo para criar sem iniciar o paciente na fila
-     if(this.enableQueue){
-      this.patientService.createPatient(this.patient).subscribe({
-        next: response => {
-          console.log('Paciente cadastrado com sucesso: ', response);
-          this.mostrarSucesso()
-          // Limpar formulário
-          this.patient = {
-            name: '',
-            age: 0,
-            gender: '',
-            cpf: '',
-            queueTicket: ''
-          };
-        },
-        error: error => {
-          console.error('Erro ao cadastrar paciente: ', error);
-          this.mostrarErro('Erro ao cadastrar paciente')
-        }
-      });
+    const request = this.selectedPatientId === null
+      ? this.patientService.createPatient(payload)
+      : this.patientService.updatePatient(this.selectedPatientId, payload);
+
+    request.subscribe({
+      next: () => {
+        const message = this.selectedPatientId === null
+          ? 'Paciente cadastrado com sucesso.'
+          : 'Paciente atualizado com sucesso.';
+
+        this.showFeedback(message, 'success');
+        this.resetForm();
+        this.loadPatients();
+        this.isSaving = false;
+      },
+      error: () => {
+        this.showFeedback('Erro ao salvar paciente.', 'danger');
+        this.isSaving = false;
+      }
+    });
+  }
+
+  editPatient(patient: Patient): void {
+    this.selectedPatientId = patient.id ?? null;
+    this.patient = {
+      name: patient.name,
+      age: patient.age,
+      gender: patient.gender,
+      cpf: this.formatCpf(patient.cpf)
+    };
+    this.feedbackMessage = '';
+    this.feedbackType = '';
+  }
+
+  deletePatient(patient: Patient): void {
+    if (patient.id === undefined) {
+      this.showFeedback('Paciente sem identificador para remocao.', 'danger');
+      return;
     }
 
-    //Fluxo para criar e iniciar o paciente na fila
-    else{
-      this.patientService.createPatient(this.patient).subscribe({
-        next: response => {
-          console.log('Paciente cadastrado com sucesso: ', response);
-          this.mostrarSucesso()
-          // Limpar formulário
-          this.patient = {
-            name: '',
-            age: 0,
-            gender: '',
-            cpf: '',
-            queueTicket: ''
-          };
-        },
-        error: error => {
-          console.error('Erro ao cadastrar paciente e fila: ', error);
-          this.mostrarErro("Erro ao cadastrar paciente e fila")
-        }
-      });
+    const shouldDelete = window.confirm(`Remover o paciente ${patient.name}?`);
+
+    if (!shouldDelete) {
+      return;
     }
+
+    this.deletingPatientId = patient.id;
+    this.patientService.deletePatient(patient.id).subscribe({
+      next: () => {
+        this.showFeedback('Paciente removido com sucesso.', 'success');
+        if (this.selectedPatientId === patient.id) {
+          this.resetForm();
+        }
+        this.loadPatients();
+        this.deletingPatientId = null;
+      },
+      error: () => {
+        this.showFeedback('Erro ao remover paciente.', 'danger');
+        this.deletingPatientId = null;
+      }
+    });
   }
 
-formatarCPF() {
-  let cpf = this.patient.cpf.replace(/\D/g, ''); // Remove tudo que não for número
-
-  if (cpf.length > 11) cpf = cpf.substring(0, 11);
-
-  // Aplica a máscara: 000.000.000-00
-  if (cpf.length > 9) {
-    cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-  } else if (cpf.length > 6) {
-    cpf = cpf.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-  } else if (cpf.length > 3) {
-    cpf = cpf.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+  resetForm(): void {
+    this.selectedPatientId = null;
+    this.patient = this.createEmptyPatient();
   }
 
-  this.patient.cpf = cpf;
-}
-
-mostrarSucesso() {
-    this.successModal.show();
+  formatarCPF(): void {
+    this.patient.cpf = this.formatCpf(this.patient.cpf);
   }
 
-  mostrarErro(mensagem: string) {
-    this.mensagemModal = mensagem
-    this.errorModal.show();
+  formatCpfForDisplay(cpf: string): string {
+    return this.formatCpf(cpf);
   }
 
+  getGenderLabel(gender: string): string {
+    if (gender.toUpperCase() === 'M') {
+      return 'Masculino';
+    }
+
+    if (gender.toUpperCase() === 'F') {
+      return 'Feminino';
+    }
+
+    return gender;
+  }
+
+  trackByPatientId(_: number, patient: Patient): number | undefined {
+    return patient.id;
+  }
+
+  private createEmptyPatient(): PatientPayload {
+    return {
+      name: '',
+      age: 0,
+      gender: '',
+      cpf: ''
+    };
+  }
+
+  private isValidPatient(): boolean {
+    return Boolean(
+      this.patient.name.trim() &&
+      this.patient.cpf.replace(/\D/g, '').length === 11 &&
+      this.patient.age >= 0 &&
+      this.patient.gender
+    );
+  }
+
+  private toPayload(patient: PatientPayload): PatientPayload {
+    return {
+      name: patient.name.trim(),
+      age: Number(patient.age),
+      gender: patient.gender,
+      cpf: patient.cpf.replace(/\D/g, '')
+    };
+  }
+
+  private formatCpf(value: string): string {
+    let cpf = value.replace(/\D/g, '');
+
+    if (cpf.length > 11) {
+      cpf = cpf.substring(0, 11);
+    }
+
+    if (cpf.length > 9) {
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+    }
+
+    if (cpf.length > 6) {
+      return cpf.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    }
+
+    if (cpf.length > 3) {
+      return cpf.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+    }
+
+    return cpf;
+  }
+
+  private showFeedback(message: string, type: 'success' | 'danger'): void {
+    this.feedbackMessage = message;
+    this.feedbackType = type;
+  }
 }

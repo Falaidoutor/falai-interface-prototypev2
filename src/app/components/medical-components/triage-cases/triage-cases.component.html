@@ -1,11 +1,11 @@
-<main class="container">
-  <div id="title-div" style="border-bottom: 1px solid black;">
+﻿<main class="container">
+  <div id="title-div">
     <h1 class="page-title">Casos de Pacientes</h1>
   </div>
 
   <section id="filters-div">
     <!-- Campo de pesquisa -->
-    <div class="row align-items-center mb-3" style="width: 30vw;">
+    <div class="row align-items-center mb-3 search-row">
       <div class="col-sm-12">
         <label for="search-input" class="form-label">Pesquisa por nome:</label>
         <input type="text" id="search-input" class="form-control" placeholder="Digite um nome para pesquisar..."
@@ -15,11 +15,11 @@
 
     <!-- Campo de seleção -->
     <!-- Campo de seleção + Botão adicionar paciente -->
-    <div class="row align-items-center mb-3">
+    <div class="row align-items-center mb-3 filters-actions-row">
       <!-- Filtros à esquerda -->
-      <div class="col d-flex align-items-center">
+      <div class="col d-flex align-items-center filter-controls">
         <label for="category-select" class="mt-1 me-2">Filtrar por risco:</label>
-        <select id="category-select" class="form-select me-2 w-25" [(ngModel)]="riscoFiltro">
+        <select id="category-select" class="form-select me-2" [(ngModel)]="riscoFiltro">
           <option value="">Todos</option>
           <option value="ESI-1">ESI-1</option>
           <option value="ESI-2">ESI-2</option>
@@ -31,8 +31,8 @@
       </div>
 
       <!-- Botão à direita -->
-      <div class="col text-end">
-        <button class="btn btn-primary" [routerLink]="['/medical/cases/create']">+ Adicionar paciente</button>
+      <div class="col text-end add-patient-action">
+        <button class="btn btn-primary" [routerLink]="['/medical/cases/create']">Gerenciar pacientes</button>
       </div>
     </div>
   </section>

@@ -31,7 +31,7 @@ export class TriageDetailComponent implements OnInit {
     status: ''
   };
 
-  statusDisponiveis: string[] = ['Urgente', 'Grave', 'Moderado', 'Baixo', 'Não urgente'];
+  statusDisponiveis: string[] = ['ESI-1', 'ESI-2', 'ESI-3', 'ESI-4', 'ESI-5'];
 
   constructor(
     private resultService: ResultService,

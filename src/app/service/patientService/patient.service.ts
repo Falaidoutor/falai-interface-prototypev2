@@ -4,20 +4,38 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_HOST } from '../../api.config';
 
+export type PatientPayload = Pick<Patient, 'name' | 'age' | 'gender' | 'cpf'>;
+
 @Injectable({
   providedIn: 'root'
 })
 export class PatientService {
-  private endpoint = '/api/';
+  private endpoint = `${API_HOST}/api/patients`;
 
   constructor(private http: HttpClient) { }
 
-  createPatient(paciente: Patient): Observable<Patient> {
-    return this.http.post<Patient>(`${API_HOST}${this.endpoint}patients`, paciente);
+  getPatients(): Observable<Patient[]> {
+    return this.http.get<Patient[]>(this.endpoint);
   }
 
-  createPatientAndQueue(paciente: Patient): Observable<Patient> {
-    return this.http.post<Patient>(`${API_HOST}${this.endpoint}patients`, paciente);
+  getPatientById(id: number): Observable<Patient> {
+    return this.http.get<Patient>(`${this.endpoint}/${id}`);
+  }
+
+  createPatient(paciente: PatientPayload): Observable<Patient> {
+    return this.http.post<Patient>(this.endpoint, paciente);
+  }
+
+  updatePatient(id: number, paciente: Partial<PatientPayload>): Observable<Patient> {
+    return this.http.put<Patient>(`${this.endpoint}/${id}`, paciente);
+  }
+
+  deletePatient(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  createPatientAndQueue(paciente: PatientPayload): Observable<Patient> {
+    return this.createPatient(paciente);
   }
 }
 

@@ -1,42 +1,113 @@
-
 /*Main content*/
 .content {
-background-color: #f0f8ff;
-padding: 2vw 0;
+    background-color: var(--color-bg);
+    padding: clamp(2rem, 5vw, 4rem) 0;
 }
 
 .content img {
-max-width: 100%;
+    width: min(100%, 520px);
 }
 
 .content-content {
-color: #000;
+    color: var(--color-text);
 }
 
 .content-content h1 {
-color: #007bff;
-font-weight: bold;
+    color: var(--color-primary);
+    font-weight: bold;
+    font-size: clamp(2rem, 7vw, 3.5rem);
+}
+
+.content-content p {
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    line-height: 1.65;
 }
 
 /* Feature content */
 .feature-section {
-background-color: #007bff;
-color: white;
-padding: 30px 0;
+    background-color: var(--color-surface-alt);
+    color: var(--color-text);
+    padding: clamp(1.5rem, 4vw, 2.5rem) 0;
+    border-top: 1.5px solid var(--color-border);
+    border-bottom: 1.5px solid var(--color-border);
+}
+
+.feature-section .row {
+    row-gap: 1rem;
 }
 
 .feature-card {
-background-color: #e0e0e0;
-border: none;
-padding: 20px;
+    background-color: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    height: 100%;
+    box-shadow: 0 10px 24px var(--color-shadow);
 }
 
 .feature-card img {
-max-width: 100%;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
 }
 
 .logo {
-font-weight: bold;
-color: #007bff;
+    font-weight: bold;
+    color: var(--color-primary);
 }
 
+@media (max-width: 767px) {
+    .content {
+        text-align: center;
+        padding-top: 2rem;
+    }
+
+    .content .row {
+        flex-direction: column-reverse;
+        gap: 1.5rem;
+    }
+
+    .content-content {
+        text-align: center !important;
+    }
+
+    .content-content .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .content img {
+        width: min(82vw, 360px);
+    }
+
+    .content-content h1 {
+        font-size: 2.15rem;
+    }
+
+    .content-content p {
+        text-align: left;
+    }
+
+    .feature-section {
+        padding: 1rem 0 1.25rem;
+    }
+
+    .feature-section .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .feature-section .row > [class*="col-"] {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .feature-card {
+        padding: 0.5rem;
+    }
+}

@@ -1,36 +1,41 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './components/patient-components/home/home.component';
 import { LoginComponent } from './components/patient-components/login/login.component';
-import { ChatTriageComponent } from './components/patient-components/chat-triage/chat-triage.component'
+import { ChatTriageComponent } from './components/patient-components/chat-triage/chat-triage.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { TriageCasesComponent } from './components/medical-components/triage-cases/triage-cases.component';
 import { TriageCasesLayoutComponent } from './layouts/triage-cases-layout/triage-cases-layout.component';
 import { TriageDetailComponent } from './components/medical-components/triage-detail/triage-detail.component';
 import { AddPatientComponent } from './components/medical-components/add-patient/add-patient.component';
 import { AddPatientToQueueComponent } from './components/medical-components/add-patient-to-queue/add-patient-to-queue.component';
+import { AppLoginComponent } from './components/app-login/app-login.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-    {
-        path: '',
-        component: MainLayoutComponent, // layout com menu superior e rodapé
-        children: [
-          { path: '', redirectTo: 'home', pathMatch: 'full' },
-          { path: 'home', component: HomeComponent },
-          { path: "triage/login",component: LoginComponent},
-          { path: "triage/chat/:id", component: ChatTriageComponent}
-        ]
-      },
-      {  
-      path: '',
-      component: TriageCasesLayoutComponent, 
-      children: [
-        { path: "medical/cases", component: TriageCasesComponent},
-        { path: 'medical/cases/detail/:id', component: TriageDetailComponent },
-        { path: 'medical/cases/create', component: AddPatientComponent },
-        { path: 'medical/cases/add-queue', component: AddPatientToQueueComponent },
-
-
-      ]
-    },
-   
+  { path: 'login', component: AppLoginComponent },
+  {
+    path: '',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
+    children: [
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'home', component: HomeComponent },
+      { path: 'triage/login', component: LoginComponent },
+      { path: 'triage/chat/:id', component: ChatTriageComponent }
+    ]
+  },
+  {
+    path: '',
+    component: TriageCasesLayoutComponent,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
+    children: [
+      { path: 'medical/cases', component: TriageCasesComponent },
+      { path: 'medical/cases/detail/:id', component: TriageDetailComponent },
+      { path: 'medical/cases/create', component: AddPatientComponent },
+      { path: 'medical/cases/add-queue', component: AddPatientToQueueComponent }
+    ]
+  },
+  { path: '**', redirectTo: 'home' }
 ];

@@ -3,32 +3,36 @@ body {
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-color: #fdfdfd;
+    background-color: var(--color-bg-soft);
 }
 
-#title-div{
+#title-div {
     margin-top: 5vh;
     margin-bottom: 4vh;
+    border-bottom: 1.5px solid var(--color-border-strong);
 }
+
 .page-title {
     margin-bottom: 1vw;
-    font-size: 250%;
+    font-size: clamp(2rem, 6vw, 2.75rem);
     font-weight: bold;
-    color: #1487ff;
+    color: var(--color-primary);
     text-align: left;
-    
 }
 
 /* CARD */
 
 .case-row {
-    border: 1px solid #ccc;
+    border: 1.5px solid var(--color-border);
     margin-bottom: 1rem;
     padding: 1rem;
-    background-color: #f9f9f9;
+    background-color: var(--color-surface);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 24px var(--color-shadow);
 }
 
 .case-details {
@@ -47,9 +51,9 @@ body {
 }
 
 .case-actions button {
-    background-color: #1487ff;
+    background-color: var(--color-primary);
     color: #fff;
-    border: none;
+    border: 1.5px solid var(--color-primary);
     padding: 0.5rem 1rem;
     border-radius: 4px;
 }
@@ -57,44 +61,55 @@ body {
 .card-footer {
     text-align: center;
     font-size: 65%;
-    background-color: #f1f1f1;
+    background-color: var(--color-surface-alt);
 }
 
 .btn-primary {
-    background-color: #1487ff;
-    border-color: #1487ff;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .btn-primary:hover {
-    background-color: #005bb5;
-    border-color: #004999;
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
 }
 
-#button-div button{
-    height: 4vh;
-    width: 25vw; 
+#button-div button,
+#input-div input {
+    min-height: 44px;
+    width: 100%;
 }
 
-#input-div input{
-    height: 4vh;
-    width: 25vw;
+#input-div input {
     font-size: 18px;
 }
 
-
-
 /* Filter and select */
-#filters-div{
-    padding: 10px;
+#filters-div {
+    padding: 10px 0;
     padding-top: 1vw;
     margin-bottom: 1vw;
-    width: 60vw;
+    width: min(100%, 900px);
+    background-color: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 10px 24px var(--color-shadow);
 }
 
-#search-input{
+.search-row {
+    width: min(100%, 480px);
+}
+
+.filter-controls {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#search-input {
     width: 100%;
     padding: 7px;
-    border: 1px solid #ccc;
+    border: 1.5px solid var(--color-border);
     border-radius: 5px;
     font-size: 100%;
     margin-bottom: 1vh;
@@ -102,16 +117,74 @@ body {
 
 #category-select {
     width: auto;
+    min-width: 140px;
     padding: 7px;
-    border: 1px solid #ccc;
+    border: 1.5px solid var(--color-border);
     border-radius: 5px;
     font-size: 100%;
 }
 
-
-
 #btn-filter {
-    margin-left: 9vw;
-    width: 6vw;  
-    padding: 7px; 
+    width: auto;
+    padding: 7px;
+}
+
+@media (max-width: 767px) {
+    main.container {
+        width: min(100% - 24px, 540px);
+    }
+
+    #title-div {
+        margin-top: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.9rem;
+    }
+
+    .filters-actions-row {
+        gap: 0.75rem;
+    }
+
+    .filter-controls,
+    .add-patient-action {
+        flex: 0 0 100%;
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .filter-controls label,
+    #category-select,
+    .filter-controls button,
+    .add-patient-action button {
+        width: 100%;
+        margin-right: 0 !important;
+    }
+
+    .case-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+        padding: 0.9rem;
+        box-shadow: 0 8px 22px var(--color-shadow);
+    }
+
+    .case-details {
+        padding-right: 0;
+    }
+
+    .case-status,
+    .case-actions {
+        text-align: left;
+    }
+
+    .case-details p,
+    .case-status p {
+        margin-bottom: 0.35rem;
+    }
+
+    .case-actions button {
+        width: 100%;
+    }
 }
