@@ -2,39 +2,28 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    min-height: 48px;
+    min-height: 72px;
     padding: 0 7vw;
     background-color: var(--color-bg-soft);
     border-bottom: 3px solid #087cf4;
 }
 
 #nav-top .container-fluid {
-    min-height: 48px;
+    min-height: 72px;
     padding: 0;
 }
 
 .navbar-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    color: #087cf4 !important;
-    font-size: 0.86rem;
-    font-weight: 800;
     line-height: 1;
-    letter-spacing: 0;
+    padding: 0;
 }
 
-.brand-mark {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #087cf4;
-    border-radius: 50%;
-    color: #087cf4;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 800;
+.brand-logo {
+    display: block;
+    width: auto;
+    height: 48px;
 }
 
 .links {
@@ -45,7 +34,7 @@
 .links a {
     color: var(--color-text);
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.78rem;
+    font-size: 0.95rem;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -68,16 +57,16 @@
 }
 
 .theme-toggle {
-    width: 44px;
-    min-width: 44px;
-    min-height: 28px;
+    width: 52px;
+    min-width: 52px;
+    min-height: 34px;
     padding: 0;
-    margin-left: 0.8rem;
+    margin-left: 1rem;
     border: 0;
     border-radius: 999px;
     background-color: #087cf4;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-weight: 800;
     line-height: 1;
     display: inline-flex;
@@ -96,7 +85,12 @@
 
 @media (max-width: 991px) {
     #nav-top {
-        padding: 0.35rem 1rem;
+        min-height: 64px;
+        padding: 0.45rem 1rem;
+    }
+
+    #nav-top .container-fluid {
+        min-height: 54px;
     }
 
     #div-links {
@@ -110,7 +104,7 @@
 
     .links .nav-link {
         width: 100%;
-        padding: 0.72rem 0;
+        padding: 0.82rem 0;
         border-top: 1px solid var(--color-border);
     }
 
@@ -120,12 +114,7 @@
 }
 
 @media (max-width: 576px) {
-    .navbar-brand {
-        font-size: 0.76rem;
-    }
-
-    .brand-mark {
-        width: 22px;
-        height: 22px;
+    .brand-logo {
+        height: 38px;
     }
 }

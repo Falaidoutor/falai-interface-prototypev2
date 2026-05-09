@@ -1,9 +1,9 @@
 /* Sidebar */
 .sidebar {
-    height: calc(100vh - 48px);
+    height: calc(100vh - 72px);
     width: 220px;
     position: fixed;
-    top: 48px;
+    top: 72px;
     left: 0;
     background-color: var(--medical-nav-bg);
     padding-top: 1rem;
