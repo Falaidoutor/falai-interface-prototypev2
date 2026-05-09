@@ -131,14 +131,30 @@
     text-align: left;
 }
 
+.security-copy {
+    max-width: 430px;
+}
+
 .security-copy h2 {
     font-size: clamp(1.7rem, 4vw, 2.45rem);
-    line-height: 1;
+    line-height: 1.12;
+    margin-top: 0.25rem;
+    margin-bottom: 0.75rem;
+    max-width: 360px;
+}
+
+.security-copy p {
+    margin: 0 0 1.25rem;
+    max-width: 410px;
 }
 
 .security-copy ul {
-    margin: 0.75rem 0 0;
-    padding-left: 1.1rem;
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.security-copy li + li {
+    margin-top: 0.35rem;
 }
 
 .security-visual img {
@@ -243,6 +259,11 @@
     .hero-copy,
     .security-copy {
         max-width: 100%;
+    }
+
+    .security-copy h2,
+    .security-copy p {
+        max-width: none;
     }
 
     .security-copy ul {
