@@ -79,6 +79,13 @@
     color: #ffffff;
 }
 
+:host-context(body.dark-mode) .workflow-section {
+    background:
+        radial-gradient(circle at 16% 12%, rgba(111, 183, 223, 0.18), transparent 26%),
+        radial-gradient(circle at 96% 84%, rgba(78, 159, 202, 0.16), transparent 30%),
+        #1b435c;
+}
+
 .workflow-section h2 {
     margin: 0 0 clamp(1.3rem, 3vw, 2rem);
     color: #ffffff;
@@ -173,6 +180,10 @@
     padding: clamp(1.6rem, 4vw, 2.3rem) 0 clamp(2rem, 5vw, 3.2rem);
 }
 
+:host-context(body.dark-mode) .faq-section {
+    background-color: var(--color-bg);
+}
+
 .faq-section h2 {
     margin: 0 0 1.4rem;
     color: #000000;
@@ -181,10 +192,19 @@
     font-weight: 800;
 }
 
+:host-context(body.dark-mode) .faq-section h2 {
+    color: var(--color-text);
+}
+
 .faq-list {
     overflow: hidden;
     border-radius: 8px;
     background-color: #f4f4f4;
+}
+
+:host-context(body.dark-mode) .faq-list {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
 }
 
 .faq-list summary {
@@ -196,10 +216,18 @@
     font-weight: 700;
 }
 
+:host-context(body.dark-mode) .faq-list summary {
+    color: var(--color-text);
+}
+
 .faq-list p {
     margin: 0;
     padding: 0 1rem 0.85rem;
     color: #4b4b4b;
+}
+
+:host-context(body.dark-mode) .faq-list p {
+    color: var(--color-muted);
 }
 
 .faq-answer {
