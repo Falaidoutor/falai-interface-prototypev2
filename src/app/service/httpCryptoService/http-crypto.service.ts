@@ -5,17 +5,26 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { API_HOST, HTTP_CRYPTO_SECRET } from '../../api.config';
+import { API_HOST, HTTP_CRYPTO_PUBLIC_KEY } from '../../api.config';
 
 type EncryptedPayload = {
   encrypted: true;
-  alg: 'AES-256-GCM';
+  alg: 'RSA-OAEP-256+A256GCM';
+  key: string;
+  iv: string;
+  data: string;
+};
+
+type SessionEncryptedPayload = {
+  encrypted: true;
+  alg: 'A256GCM';
   iv: string;
   data: string;
 };
 
 type EncryptedRequest = {
   request: HttpRequest<unknown>;
+  responseKey: CryptoKey;
 };
 
 @Injectable({
@@ -24,10 +33,10 @@ type EncryptedRequest = {
 export class HttpCryptoService {
   private readonly encoder = new TextEncoder();
   private readonly decoder = new TextDecoder();
-  private keyPromise?: Promise<CryptoKey>;
+  private publicKeyPromise?: Promise<CryptoKey>;
 
   isEnabled(): boolean {
-    return HTTP_CRYPTO_SECRET.trim().length > 0;
+    return HTTP_CRYPTO_PUBLIC_KEY.trim().length > 0;
   }
 
   shouldHandle(url: string): boolean {
@@ -35,18 +44,24 @@ export class HttpCryptoService {
   }
 
   async encryptRequest(req: HttpRequest<unknown>): Promise<EncryptedRequest> {
+    const responseKey = await this.generateSessionKey();
     let body = req.body;
     let params = req.params;
 
     if (body !== null && body !== undefined && this.isJsonBody(body)) {
-      body = await this.encrypt(body);
+      body = await this.encrypt(body, responseKey);
     }
 
     if (req.params.keys().length > 0) {
       const queryPayload = this.paramsToObject(req.params);
       params = new HttpParams().set(
         'payload',
-        JSON.stringify(await this.encrypt(queryPayload)),
+        JSON.stringify(await this.encrypt(queryPayload, responseKey)),
+      );
+    } else if (body === null || body === undefined) {
+      params = new HttpParams().set(
+        'payload',
+        JSON.stringify(await this.encrypt({}, responseKey)),
       );
     }
 
@@ -58,18 +73,21 @@ export class HttpCryptoService {
       },
     });
 
-    return { request };
+    return { request, responseKey };
   }
 
-  async decryptResponse<T>(response: HttpResponse<T>): Promise<T> {
+  async decryptResponse<T>(
+    response: HttpResponse<T>,
+    responseKey: CryptoKey,
+  ): Promise<T> {
     if (!this.isEncryptedPayload(response.body)) {
       return response.body as T;
     }
 
-    return await this.decrypt<T>(response.body);
+    return await this.decrypt<T>(response.body, responseKey);
   }
 
-  async decryptError(error: unknown): Promise<unknown> {
+  async decryptError(error: unknown, responseKey: CryptoKey): Promise<unknown> {
     if (
       !(error instanceof HttpErrorResponse) ||
       !this.isEncryptedPayload(error.error)
@@ -77,7 +95,7 @@ export class HttpCryptoService {
       return error;
     }
 
-    const decryptedError = await this.decrypt(error.error);
+    const decryptedError = await this.decrypt(error.error, responseKey);
 
     return new HttpErrorResponse({
       error: decryptedError,
@@ -88,58 +106,78 @@ export class HttpCryptoService {
     });
   }
 
-  private async encrypt(value: unknown): Promise<EncryptedPayload> {
+  private async encrypt(
+    value: unknown,
+    responseKey: CryptoKey,
+  ): Promise<EncryptedPayload> {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const plaintext = this.encoder.encode(JSON.stringify(value ?? null));
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
-      await this.getKey(),
+      responseKey,
       plaintext,
+    );
+    const rawResponseKey = await crypto.subtle.exportKey('raw', responseKey);
+    const encryptedKey = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      await this.getPublicKey(),
+      rawResponseKey,
     );
 
     return {
       encrypted: true,
-      alg: 'AES-256-GCM',
+      alg: 'RSA-OAEP-256+A256GCM',
+      key: this.toBase64(new Uint8Array(encryptedKey)),
       iv: this.toBase64(iv),
       data: this.toBase64(new Uint8Array(encrypted)),
     };
   }
 
-  private async decrypt<T>(payload: EncryptedPayload): Promise<T> {
+  private async decrypt<T>(
+    payload: SessionEncryptedPayload,
+    responseKey: CryptoKey,
+  ): Promise<T> {
     const decrypted = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: this.fromBase64(payload.iv) },
-      await this.getKey(),
+      responseKey,
       this.fromBase64(payload.data),
     );
 
     return JSON.parse(this.decoder.decode(decrypted)) as T;
   }
 
-  private getKey(): Promise<CryptoKey> {
-    if (!this.keyPromise) {
-      this.keyPromise = crypto.subtle
-        .digest('SHA-256', this.encoder.encode(HTTP_CRYPTO_SECRET))
-        .then((digest) =>
-          crypto.subtle.importKey('raw', digest, 'AES-GCM', false, [
-            'encrypt',
-            'decrypt',
-          ]),
-        );
-    }
-
-    return this.keyPromise;
+  private generateSessionKey(): Promise<CryptoKey> {
+    return crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt'],
+    );
   }
 
-  private isEncryptedPayload(value: unknown): value is EncryptedPayload {
+  private getPublicKey(): Promise<CryptoKey> {
+    if (!this.publicKeyPromise) {
+      this.publicKeyPromise = crypto.subtle.importKey(
+        'spki',
+        this.fromBase64(HTTP_CRYPTO_PUBLIC_KEY),
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        false,
+        ['encrypt'],
+      );
+    }
+
+    return this.publicKeyPromise;
+  }
+
+  private isEncryptedPayload(value: unknown): value is SessionEncryptedPayload {
     if (!value || typeof value !== 'object') {
       return false;
     }
 
-    const payload = value as Partial<EncryptedPayload>;
+    const payload = value as Partial<SessionEncryptedPayload>;
 
     return (
       payload.encrypted === true &&
-      payload.alg === 'AES-256-GCM' &&
+      payload.alg === 'A256GCM' &&
       typeof payload.iv === 'string' &&
       typeof payload.data === 'string'
     );

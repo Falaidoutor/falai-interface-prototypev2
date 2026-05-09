@@ -26,19 +26,19 @@ export const applicationKeyInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return from(httpCryptoService.encryptRequest(securedRequest)).pipe(
-    switchMap(({ request }) =>
+    switchMap(({ request, responseKey }) =>
       next(request).pipe(
         mergeMap((event: HttpEvent<unknown>) => {
           if (!(event instanceof HttpResponse)) {
             return of(event);
           }
 
-          return from(httpCryptoService.decryptResponse(event)).pipe(
+          return from(httpCryptoService.decryptResponse(event, responseKey)).pipe(
             mergeMap((body) => of(event.clone({ body }))),
           );
         }),
         catchError((error: HttpErrorResponse) =>
-          from(httpCryptoService.decryptError(error)).pipe(
+          from(httpCryptoService.decryptError(error, responseKey)).pipe(
             switchMap((decryptedError) => throwError(() => decryptedError)),
           ),
         ),
