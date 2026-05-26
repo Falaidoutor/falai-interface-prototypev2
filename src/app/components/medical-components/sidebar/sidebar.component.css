@@ -12,15 +12,20 @@
     border-right: 1.5px solid var(--color-border-strong);
 }
 
-.sidebar a {
+.sidebar a,
+.sidebar-link {
     padding: 0.8rem 1rem;
     text-decoration: none;
     color: var(--medical-nav-text);
     display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
     transition: 0.3s;
     font-weight: 500;
     font-size: 1rem;
     font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
     overflow-wrap: anywhere;
 }
 
@@ -32,6 +37,11 @@
 .sidebar a:hover {
     background-color: var(--color-primary);
     color: #ffffff;
+}
+
+.sidebar-link-disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
 }
 
 @media (max-width: 991px) {
@@ -59,7 +69,8 @@
         flex: 1;
     }
 
-    .sidebar a {
+    .sidebar a,
+    .sidebar-link {
         padding: 0.6rem 0.75rem;
         white-space: nowrap;
         border-radius: 0.5rem;
@@ -84,7 +95,8 @@
         gap: 0.4rem;
     }
 
-    .sidebar a {
+    .sidebar a,
+    .sidebar-link {
         display: flex;
         align-items: center;
         justify-content: center;

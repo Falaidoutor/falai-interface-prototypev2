@@ -61,8 +61,10 @@ export class AddPatientComponent implements OnInit {
   }
 
   savePatient(): void {
-    if (!this.isValidPatient()) {
-      this.showFeedback('Preencha nome, CPF, idade e gênero.', 'danger');
+    const validationMessage = this.getPatientValidationMessage();
+
+    if (validationMessage) {
+      this.showFeedback(validationMessage, 'danger');
       return;
     }
 
@@ -170,13 +172,18 @@ export class AddPatientComponent implements OnInit {
     };
   }
 
-  private isValidPatient(): boolean {
-    return Boolean(
-      this.patient.name.trim() &&
-      this.patient.cpf.replace(/\D/g, '').length === 11 &&
-      this.patient.age >= 0 &&
-      this.patient.gender
-    );
+  private getPatientValidationMessage(): string {
+    const age = Number(this.patient.age);
+
+    if (!this.patient.name.trim() || !this.patient.cpf.trim() || !Number.isFinite(age) || !this.patient.gender) {
+      return 'Preencha nome, CPF, idade e gênero.';
+    }
+
+    if (age < 0) {
+      return 'Idade deve ser zero ou maior.';
+    }
+
+    return '';
   }
 
   private toPayload(patient: PatientPayload): PatientPayload {
