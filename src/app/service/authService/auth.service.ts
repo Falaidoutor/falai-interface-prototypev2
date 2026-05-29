@@ -14,10 +14,9 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   // Função para fazer o login
-  login(cpf: string, queueTicket: string): Observable<AuthResponse> {
+  login(cpf: string): Observable<AuthResponse> {
     const params = new HttpParams()
-      .set('cpf', cpf)
-      .set('queueTicket', queueTicket);
+      .set('cpf', cpf);
 
     return this.http.get<AuthResponse>(`${API_HOST}${this.endpoint}`, { params });
   }

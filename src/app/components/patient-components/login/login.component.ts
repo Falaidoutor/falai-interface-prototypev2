@@ -2,7 +2,6 @@
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../service/authService/auth.service';
 import { AuthResponse } from '../../../models/auth-response';
 
@@ -22,7 +21,7 @@ declare var bootstrap: any;
 export class LoginComponent {
   errorMessage: string = ''; 
   cpf = '';
-  senhaFila = '';
+  private readonly triageSessionStorageKey = 'falai-patient-triage-session';
 
   constructor(
     private authService: AuthService,
@@ -30,45 +29,29 @@ export class LoginComponent {
   ) {}
 
   login() {
-    this.authService.login(this.cpf, this.senhaFila).subscribe({
+    this.authService.login(this.cpf).subscribe({
       next: (res: AuthResponse) => {
         if (!res.authenticated) {
-          this.errorMessage = 'CPF ou senha inválidos';  // Defina a mensagem de erro
+          this.errorMessage = 'CPF nao encontrado';  // Defina a mensagem de erro
           this.showErrorModal();  // Exiba o modal
           return;
         }
 
-        switch (res.statusId) {
-          case 0: // Em Aberto
-            this.router.navigate(
-              ['/triage/chat', res.queueTriageId],
-              {
-                state: {
-                  queueTicket: this.senhaFila,
-                  patientName: res.patientName,
-                  status: res.statusId
-                }
-              }
-            );
-            break;
-
-          case 1: // Feito
-            this.errorMessage = 'Sua triagem já foi finalizada.';
-            this.showErrorModal();
-            break;
-
-          case 2: // Cancelado
-            this.errorMessage = 'Sua triagem foi cancelada.';
-            this.showErrorModal();
-            break;
-
-          default:
-            this.errorMessage = 'Status desconhecido. Entre em contato com a recepção.';
-            this.showErrorModal();
+        if (!res.patientId || !res.cpf) {
+          this.errorMessage = 'Paciente nao encontrado. Entre em contato com a recepcao.';
+          this.showErrorModal();
+          return;
         }
+
+        sessionStorage.setItem(this.triageSessionStorageKey, JSON.stringify({
+          patientId: res.patientId,
+          cpf: res.cpf,
+          patientName: res.patientName,
+        }));
+        this.router.navigate(['/triagens']);
       },
       error: () => {
-        this.errorMessage = 'Erro de conexão. Tente novamente mais tarde.';
+        this.errorMessage = 'Erro de conexao. Tente novamente mais tarde.';
         this.showErrorModal();
       }
     });

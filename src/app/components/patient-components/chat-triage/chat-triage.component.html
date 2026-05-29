@@ -27,9 +27,7 @@
     <button class="btn btn-primary" type="button" (click)="sendMessage()">Enviar</button>
   </div>
 
-  <!-- Mensagem de status quando o chat está bloqueado -->
-  <div *ngIf="isChatBlocked" class="alert alert-secondary mt-3" role="alert">
-    <span *ngIf="status === 1">A triagem já foi finalizada.</span>
-    <span *ngIf="status === 2">A triagem foi cancelada.</span>
+  <div *ngIf="isChatBlocked" class="chat-done-actions">
+    <button class="btn btn-primary" type="button" (click)="goToTriages()">Ver minhas triagens</button>
   </div>
 </section>

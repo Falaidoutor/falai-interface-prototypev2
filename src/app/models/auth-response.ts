@@ -1,6 +1,6 @@
 ﻿export interface AuthResponse {
   authenticated: boolean;
   patientName: string | null;
-  queueTriageId: number | null;
-  statusId: number | null;
+  patientId: number | null;
+  cpf: string | null;
 }

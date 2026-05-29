@@ -75,6 +75,16 @@
     border-bottom-right-radius: 0;
 }
 
+.chat-done-actions {
+    padding: 12px;
+    border-top: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.chat-done-actions .btn {
+    width: 100%;
+}
+
 @media (max-width: 576px) {
     .chat-container {
         width: 100%;

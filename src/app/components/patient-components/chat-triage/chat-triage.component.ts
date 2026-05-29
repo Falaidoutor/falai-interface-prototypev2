@@ -1,7 +1,8 @@
 ﻿import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { PatientTriageSession } from '../../../models/patient-triage';
 import { TriageService } from '../../../service/triageService/triage.service';
 
 @Component({
@@ -20,23 +21,24 @@ export class ChatTriageComponent implements AfterViewInit {
   isLoading = false;
 
   firstName: string = '';
-  queueTriageId!: number;
-  patientName!: string;
-  queueTicket!: string;
-  status!: number;
+  patientName = '';
+  createdQueueTicket = '';
+  private readonly triageSessionStorageKey = 'falai-patient-triage-session';
+  private session: PatientTriageSession | null = null;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private triageService: TriageService,
   ) {
-    this.queueTriageId = Number(this.route.snapshot.paramMap.get('id'));
-    const navState = this.router.getCurrentNavigation()?.extras.state;
-    this.patientName = navState?.['patientName'];
-    this.status = navState?.['status'];
-    this.queueTicket = navState?.['queueTicket']
-    this.firstName = this.patientName.split(' ')[0];
-    this.isChatBlocked = this.status === 1 || this.status === 2;
+    this.session = this.readSession();
+
+    if (!this.session) {
+      this.router.navigate(['/triage/login']);
+      return;
+    }
+
+    this.patientName = this.session.patientName ?? '';
+    this.firstName = this.patientName.split(' ')[0] || 'Paciente';
   }
 
   ngAfterViewInit(): void {
@@ -45,55 +47,62 @@ export class ChatTriageComponent implements AfterViewInit {
 
   messages = [
     { text: 'Olá, {{ firstName }}! O que está sentindo?', type: 'ia' },
-    
   ];
   
   
   userInputValue = '';
   
   sendMessage(): void {
-    if (this.isChatBlocked) return; // impede envio de mensagem se bloqueado
+    if (this.isChatBlocked || !this.session) return;
     const text = this.userInputValue.trim();
     if (!text) return;
   
     this.messages.push({ text, type: 'user' });
     this.userInputValue = '';
-  
-    
-  if (this.status === 1) {
-    this.messages.push({
-      text: 'Sua triagem já foi finalizada!',
-      type: 'ia'
-    });
-    return;
-  } else if (this.status === 2) {
-    this.messages.push({
-      text: 'Sua triagem foi cancelada.',
-      type: 'ia'
-    });
-    return;
-  }
 
-  this.isLoading = true; // ativa o spinner
+    this.isLoading = true;
   
-    this.triageService.register(text, this.queueTicket, this.queueTriageId).subscribe({
-      next: (response) => {
+    this.triageService.createPatientTriage(text, this.session).subscribe({
+      next: (triage) => {
         this.isLoading = false;
+        this.createdQueueTicket = triage.queueTicket;
+        this.isChatBlocked = true;
         this.messages.push({
-          text: `Classificação de Risco: ${response.classificacao}\n\nJustificativa: ${response.justificativa}`,
+          text: `Triagem registrada com sucesso.\n\nSenha da fila: ${triage.queueTicket}\n\nEla aparecera como pendente ate a analise da IA e a confirmacao do profissional de saude.`,
           type: 'ia'
         });
-        this.status = 1;
       },
       error: (err) => {
         console.error('Erro ao enviar sintomas:', err);
         this.isLoading = false;
         this.messages.push({
-          text: 'Desculpe, ocorreu um erro. Tente novamente mais tarde.',
+          text: 'Desculpe, nao foi possivel registrar a triagem. Tente novamente mais tarde.',
           type: 'ia'
         });
       }
     });
+  }
+
+  goToTriages(): void {
+    this.router.navigate(['/triagens']);
+  }
+
+  private readSession(): PatientTriageSession | null {
+    const rawSession = sessionStorage.getItem(this.triageSessionStorageKey);
+
+    if (!rawSession) {
+      return null;
+    }
+
+    try {
+      const session = JSON.parse(rawSession) as PatientTriageSession;
+      if (!session.patientId || !session.cpf) {
+        return null;
+      }
+      return session;
+    } catch {
+      return null;
+    }
   }
   
 }
