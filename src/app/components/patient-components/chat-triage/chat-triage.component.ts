@@ -5,6 +5,12 @@ import { Router } from '@angular/router';
 import { PatientTriageSession } from '../../../models/patient-triage';
 import { TriageService } from '../../../service/triageService/triage.service';
 
+type ChatStep = 'queueTicket' | 'symptoms' | 'done';
+type ChatMessage = {
+  text: string;
+  type: 'ia' | 'user' | 'contact';
+};
+
 @Component({
   selector: 'app-chat-triage',
   templateUrl: './chat-triage.component.html',
@@ -23,6 +29,8 @@ export class ChatTriageComponent implements AfterViewInit {
   firstName: string = '';
   patientName = '';
   createdQueueTicket = '';
+  queueTicket = '';
+  chatStep: ChatStep = 'queueTicket';
   private readonly triageSessionStorageKey = 'falai-patient-triage-session';
   private session: PatientTriageSession | null = null;
 
@@ -45,12 +53,18 @@ export class ChatTriageComponent implements AfterViewInit {
     console.log('Chat ready:', this.chatMessages);
   }
 
-  messages = [
-    { text: 'Olá, {{ firstName }}! O que está sentindo?', type: 'ia' },
+  messages: ChatMessage[] = [
+    { text: 'Olá, {{ firstName }}! Informe a senha da fila para iniciar uma nova triagem.', type: 'ia' },
   ];
   
   
   userInputValue = '';
+
+  get inputPlaceholder(): string {
+    return this.chatStep === 'queueTicket'
+      ? 'Digite a senha da fila...'
+      : 'Digite sua mensagem...';
+  }
   
   sendMessage(): void {
     if (this.isChatBlocked || !this.session) return;
@@ -60,15 +74,26 @@ export class ChatTriageComponent implements AfterViewInit {
     this.messages.push({ text, type: 'user' });
     this.userInputValue = '';
 
+    if (this.chatStep === 'queueTicket') {
+      this.queueTicket = text;
+      this.chatStep = 'symptoms';
+      this.messages.push({
+        text: 'Obrigado. O que está sentindo?',
+        type: 'ia'
+      });
+      return;
+    }
+
     this.isLoading = true;
   
-    this.triageService.createPatientTriage(text, this.session).subscribe({
+    this.triageService.createPatientTriage(text, this.queueTicket, this.session).subscribe({
       next: (triage) => {
         this.isLoading = false;
-        this.createdQueueTicket = triage.queueTicket;
+        this.createdQueueTicket = triage.queueTicket || this.queueTicket;
         this.isChatBlocked = true;
+        this.chatStep = 'done';
         this.messages.push({
-          text: `Triagem registrada com sucesso.\n\nSenha da fila: ${triage.queueTicket}\n\nEla aparecera como pendente ate a analise da IA e a confirmacao do profissional de saude.`,
+          text: `Triagem registrada com sucesso.\n\nSenha da fila: ${this.createdQueueTicket}\n\nEla aparecera como pendente ate a analise da IA e a confirmacao do profissional de saude.`,
           type: 'ia'
         });
       },

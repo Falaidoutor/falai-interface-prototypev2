@@ -21,7 +21,7 @@
 
   <!-- Input e botão de envio (aparecem somente se o chat não estiver bloqueado) -->
   <div class="chat-input input-group" *ngIf="!isChatBlocked">
-    <input [(ngModel)]="userInputValue" type="text" class="form-control" placeholder="Digite sua mensagem..."
+    <input [(ngModel)]="userInputValue" type="text" class="form-control" [placeholder]="inputPlaceholder"
       (keydown.enter)="sendMessage()" #userInput>
 
     <button class="btn btn-primary" type="button" (click)="sendMessage()">Enviar</button>
