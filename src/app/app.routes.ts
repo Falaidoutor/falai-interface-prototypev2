@@ -3,6 +3,7 @@ import { HomeComponent } from './components/patient-components/home/home.compone
 import { AboutComponent } from './components/patient-components/about/about.component';
 import { LoginComponent } from './components/patient-components/login/login.component';
 import { ChatTriageComponent } from './components/patient-components/chat-triage/chat-triage.component';
+import { PatientTriagesComponent } from './components/patient-components/patient-triages/patient-triages.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { TriageCasesComponent } from './components/medical-components/triage-cases/triage-cases.component';
 import { TriageCasesLayoutComponent } from './layouts/triage-cases-layout/triage-cases-layout.component';
@@ -24,6 +25,8 @@ export const routes: Routes = [
       { path: 'home', component: HomeComponent },
       { path: 'about', component: AboutComponent },
       { path: 'triage/login', component: LoginComponent },
+      { path: 'triagens', component: PatientTriagesComponent },
+      { path: 'triages', redirectTo: 'triagens', pathMatch: 'full' },
       { path: 'triage/chat/:id', component: ChatTriageComponent }
     ]
   },

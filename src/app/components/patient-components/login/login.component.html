@@ -3,16 +3,11 @@
     <div class="container login-container">
         <div class="row">
             <main>
-                <p class="login-title mb-4 mt-3">Acesse sua triagem</p>
+                <p class="login-title mb-4 mt-3">Acesse suas triagens</p>
                 <form (ngSubmit)="login()" #loginForm="ngForm">
                     <div class="mb-4">
                         <label for="cpf" class="form-label">CPF</label>
                         <input type="text" class="form-control" id="cpf" name="cpf" [(ngModel)]="cpf" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="senhaFila" class="form-label">Senha da fila</label>
-                        <input type="text" class="form-control" id="senhaFila" name="senhaFila" [(ngModel)]="senhaFila"
-                            required>
                     </div>
                     <div class="mb-3 d-flex justify-content-center">
                         <button type="submit" class="btn btn-primary">Entrar</button>
