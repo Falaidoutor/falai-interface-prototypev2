@@ -14,12 +14,18 @@ export interface AuthApiResponse {
   id?: number | string | null;
   cpf?: string | null;
   name?: string | null;
+  nome?: string | null;
+  data?: AuthApiResponse | null;
+  result?: AuthApiResponse | null;
+  user?: AuthApiResponse | null;
+  paciente?: AuthApiResponse | null;
   patient?: {
     id?: number | string | null;
     patientId?: number | string | null;
     patient_id?: number | string | null;
     cpf?: string | null;
     name?: string | null;
+    nome?: string | null;
     patientName?: string | null;
     patient_name?: string | null;
   } | null;

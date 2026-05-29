@@ -12,7 +12,7 @@ export interface PatientTriageListItem {
 }
 
 export interface PatientTriageSession {
-  patientId: number;
+  patientId: number | null;
   cpf: string;
   patientName: string | null;
 }

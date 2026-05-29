@@ -16,15 +16,16 @@ export class AuthService {
 
   // Função para fazer o login
   login(cpf: string): Observable<AuthResponse> {
+    const normalizedCpf = cpf.trim();
     const params = new HttpParams()
-      .set('cpf', cpf.trim());
+      .set('cpf', normalizedCpf);
 
     return this.http
       .get<AuthApiResponse>(`${API_HOST}${this.endpoint}`, { params })
-      .pipe(map((response) => this.normalizeAuthResponse(response)));
+      .pipe(map((response) => this.normalizeAuthResponse(response, normalizedCpf)));
   }
 
-  private normalizeAuthResponse(response: AuthApiResponse | null): AuthResponse {
+  private normalizeAuthResponse(response: AuthApiResponse | null, requestedCpf: string): AuthResponse {
     if (!response) {
       return {
         authenticated: false,
@@ -34,28 +35,30 @@ export class AuthService {
       };
     }
 
-    const patient = response.patient ?? null;
+    const payload = response.data ?? response.result ?? response;
+    const patient = payload.patient ?? payload.paciente ?? payload.user ?? null;
     const patientId = this.toNumber(
-      response.patientId ??
-      response.patient_id ??
-      response.id ??
+      payload.patientId ??
+      payload.patient_id ??
+      payload.id ??
       patient?.patientId ??
       patient?.patient_id ??
       patient?.id ??
       null,
     );
-    const patientCpf = response.cpf ?? patient?.cpf ?? null;
+    const patientCpf = payload.cpf ?? patient?.cpf ?? requestedCpf;
     const patientName =
-      response.patientName ??
-      response.patient_name ??
-      response.name ??
+      payload.patientName ??
+      payload.patient_name ??
+      payload.name ??
       patient?.patientName ??
       patient?.patient_name ??
+      patient?.nome ??
       patient?.name ??
       null;
 
     return {
-      authenticated: response.authenticated ?? (patientId !== null && !!patientCpf),
+      authenticated: payload.authenticated ?? response.authenticated ?? !!patientCpf,
       patientName,
       patientId,
       cpf: patientCpf,

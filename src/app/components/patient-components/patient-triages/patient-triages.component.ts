@@ -151,7 +151,7 @@ export class PatientTriagesComponent implements OnInit, OnDestroy {
 
     try {
       const session = JSON.parse(rawSession) as PatientTriageSession;
-      if (!session.patientId || !session.cpf) {
+      if (!session.cpf) {
         return null;
       }
       return session;

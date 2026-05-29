@@ -37,7 +37,7 @@ export class LoginComponent {
           return;
         }
 
-        if (!res.patientId || !res.cpf) {
+        if (!res.cpf) {
           this.errorMessage = 'Paciente nao encontrado. Entre em contato com a recepcao.';
           this.showErrorModal();
           return;
