@@ -42,17 +42,14 @@ export class TriageService {
 
   createPatientTriage(
     symptoms: string,
-    queueTicket: string,
     session: PatientTriageSession,
   ): Observable<PatientTriageListItem> {
     const body: {
       symptoms: string;
-      queueTicket: string;
       cpf: string;
       patientId?: number;
     } = {
       symptoms,
-      queueTicket,
       cpf: session.cpf
     };
 

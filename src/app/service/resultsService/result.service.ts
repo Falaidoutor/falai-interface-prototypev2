@@ -10,7 +10,6 @@ import { API_HOST } from '../../api.config';
 })
 export class ResultService {
   private endpoint = '/api/triages';
-  private novaAnaliseEndpoint = '/api/triagens';
 
 
   constructor(private http: HttpClient) { }
@@ -23,9 +22,12 @@ export class ResultService {
     return this.http.get<TriageDetail>(`${API_HOST}${this.endpoint}/${id}`);
   }
 
-  enviarNovaTriagem(id: string, triagem: { analise: string, status: string }) {
-  return this.http.post(`${API_HOST}${this.novaAnaliseEndpoint}/${id}/nova-analise`, triagem);
-}
+  enviarNovaTriagem(id: string, triagem: { analise: string, status: string }): Observable<TriageDetail> {
+    return this.http.put<TriageDetail>(`${API_HOST}${this.endpoint}/${id}`, {
+      classificacao: triagem.status,
+      justificativa: triagem.analise,
+    });
+  }
 
   deleteTriage(queueId: string): Observable<void> {
     return this.http.delete<void>(`${API_HOST}${this.endpoint}/${queueId}`);

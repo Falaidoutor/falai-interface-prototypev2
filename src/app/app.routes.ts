@@ -9,7 +9,6 @@ import { TriageCasesComponent } from './components/medical-components/triage-cas
 import { TriageCasesLayoutComponent } from './layouts/triage-cases-layout/triage-cases-layout.component';
 import { TriageDetailComponent } from './components/medical-components/triage-detail/triage-detail.component';
 import { AddPatientComponent } from './components/medical-components/add-patient/add-patient.component';
-import { AddPatientToQueueComponent } from './components/medical-components/add-patient-to-queue/add-patient-to-queue.component';
 import { AppLoginComponent } from './components/app-login/app-login.component';
 import { authGuard } from './guards/auth.guard';
 
@@ -38,8 +37,7 @@ export const routes: Routes = [
     children: [
       { path: 'medical/cases', component: TriageCasesComponent },
       { path: 'medical/cases/detail/:id', component: TriageDetailComponent },
-      { path: 'medical/cases/create', component: AddPatientComponent },
-      { path: 'medical/cases/add-queue', component: AddPatientToQueueComponent }
+      { path: 'medical/cases/create', component: AddPatientComponent }
     ]
   },
   { path: '**', redirectTo: 'home' }
