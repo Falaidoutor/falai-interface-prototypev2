@@ -98,8 +98,9 @@ export class TriageDetailComponent implements OnInit {
       next: () => {
         this.modalSucesso = true;
       },
-      error: () => {
-        this.modalSucesso = true;
+      error: (err) => {
+        console.error('Erro ao enviar nova triagem:', err);
+        this.modalErro = true;
       }
     });
   }
