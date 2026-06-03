@@ -57,13 +57,27 @@ export class TriageCasesComponent implements OnInit {
     });
   }
 
+  getCaseRouteId(patient: PatientResult): number {
+    return patient.source === 'patient-triage' && patient.triageId
+      ? patient.triageId
+      : patient.queueId;
+  }
+
+  getCaseQueryParams(patient: PatientResult): { source?: string } {
+    return patient.source === 'patient-triage'
+      ? { source: 'patient-triage' }
+      : {};
+  }
+
   getCorRisco(risk: string): string {
-    switch (risk.toLowerCase()) {
+    switch ((risk || '').toLowerCase()) {
       case 'esi-1': return '#a30000';
       case 'esi-2': return '#fe0000';
       case 'esi-3': return '#ffd900';
       case 'esi-4': return '#28a745';
       case 'esi-5': return '#00e5ff';
+      case 'pendente':
+      case 'processando ia': return '#ffb703';
       default: return '#6c757d';
     }
   }

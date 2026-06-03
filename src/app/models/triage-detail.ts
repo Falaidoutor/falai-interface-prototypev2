@@ -1,5 +1,7 @@
 export interface TriageDetail {
     queueId: number;
+    triageId?: number;
+    source?: 'queue-triage' | 'patient-triage';
     name: string;
     gender: string;
     age: number;
@@ -14,4 +16,5 @@ export interface TriageDetail {
     justificativa: string;
     createdAtDate: string;
     createdAtTime: string;
+    aiRecommendedAction?: string | null;
 }

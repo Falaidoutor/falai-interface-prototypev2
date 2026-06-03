@@ -50,7 +50,13 @@
       <p><strong>Senha da fila:</strong> {{ patient.queueTicket }}</p>
     </div>
     <div class="case-actions">
-      <button class="btn btn-primary" [routerLink]="['/medical/cases/detail/', patient.queueId]">Detalhes</button>
+      <button
+        class="btn btn-primary"
+        [routerLink]="['/medical/cases/detail/', getCaseRouteId(patient)]"
+        [queryParams]="getCaseQueryParams(patient)"
+      >
+        Detalhes
+      </button>
     </div>
   </div>
 </main>

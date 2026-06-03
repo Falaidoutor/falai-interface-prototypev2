@@ -49,7 +49,7 @@
                 <h4 class="text-primary m-0"><strong>Dados da Triagem</strong></h4>
             </div>
             <div class="col-auto text-end triage-actions">
-                <button class="btn btn-danger" type="button" (click)="excluirTriagem()" [disabled]="excluindoTriagem">
+                <button *ngIf="patient.source !== 'patient-triage'" class="btn btn-danger" type="button" (click)="excluirTriagem()" [disabled]="excluindoTriagem">
                     {{ excluindoTriagem ? 'Excluindo...' : 'Excluir Triagem' }}
                 </button>
                 <a class="btn btn-primary" (click)="abrirModal()">Revisar triagem</a>
@@ -64,6 +64,7 @@
                 <p class="mb-2"><strong>Classificação de risco: </strong> <span class="text-muted">{{ patient.classificacao
                         }}</span></p>
                 <p><strong>Justificativa: </strong> <span class="text-muted">{{ patient.justificativa }}</span></p>
+                <p *ngIf="patient.aiRecommendedAction" class="mb-0"><strong>Ação recomendada: </strong> <span class="text-muted">{{ patient.aiRecommendedAction }}</span></p>
             </div>
         </div>
     </section>

@@ -40,9 +40,14 @@ export class TriageDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
+    const source = this.route.snapshot.queryParamMap.get('source');
 
     if (id !== null) {
-      this.resultService.getTriageDetail(id).subscribe({
+      const detailRequest = source === 'patient-triage'
+        ? this.resultService.getPatientTriageDetail(id)
+        : this.resultService.getTriageDetail(id);
+
+      detailRequest.subscribe({
         next: (patient) => {
           this.patient = patient;
 
@@ -94,7 +99,12 @@ export class TriageDetailComponent implements OnInit {
       return;
     }
 
-    this.resultService.enviarNovaTriagem(id, this.triagem).subscribe({
+    const source = this.route.snapshot.queryParamMap.get('source');
+    const reviewRequest = source === 'patient-triage'
+      ? this.resultService.revisarPatientTriage(id, this.triagem)
+      : this.resultService.enviarNovaTriagem(id, this.triagem);
+
+    reviewRequest.subscribe({
       next: () => {
         this.modalSucesso = true;
       },
@@ -116,6 +126,11 @@ export class TriageDetailComponent implements OnInit {
 
   excluirTriagem(): void {
     if (this.excluindoTriagem) {
+      return;
+    }
+
+    if (this.patient?.source === 'patient-triage') {
+      this.modalExclusaoErro = true;
       return;
     }
 

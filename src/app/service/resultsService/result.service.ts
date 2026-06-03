@@ -22,10 +22,21 @@ export class ResultService {
     return this.http.get<TriageDetail>(`${API_HOST}${this.endpoint}/${id}`);
   }
 
+  getPatientTriageDetail(id: string): Observable<TriageDetail> {
+    return this.http.get<TriageDetail>(`${API_HOST}${this.endpoint}/patient/${id}`);
+  }
+
   enviarNovaTriagem(id: string, triagem: { analise: string, status: string }): Observable<TriageDetail> {
     return this.http.put<TriageDetail>(`${API_HOST}${this.endpoint}/${id}`, {
       classificacao: triagem.status,
       justificativa: triagem.analise,
+    });
+  }
+
+  revisarPatientTriage(id: string, triagem: { analise: string, status: string }): Observable<TriageDetail> {
+    return this.http.patch<TriageDetail>(`${API_HOST}${this.endpoint}/${id}/professional-review`, {
+      finalRiskClassification: triagem.status,
+      professionalNotes: triagem.analise,
     });
   }
 
