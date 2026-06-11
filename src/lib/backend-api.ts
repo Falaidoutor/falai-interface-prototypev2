@@ -2,6 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { restorePortugueseAccents } from "@/lib/portuguese-text";
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+export type JsonRecord = { [key: string]: JsonValue };
+
 export type AuthResponse = {
   authenticated: boolean;
   patientName: string | null;
@@ -41,7 +51,7 @@ export type PendingReviewTriage = {
   aiSuggestedRiskClassification: string | null;
   aiSuggestedRiskColor: string | null;
   aiRecommendedAction: string | null;
-  aiResult: Record<string, unknown> | null;
+  aiResult: JsonRecord | null;
   createdAt: string;
   aiProcessedAt: string | null;
   queueTriageId: number | null;
@@ -52,7 +62,7 @@ export type ProfessionalReviewInput = {
   triageId: number;
   professionalId?: string;
   professionalNotes?: string;
-  finalResult?: Record<string, unknown>;
+  finalResult?: JsonRecord;
   finalRiskClassification: EsiLevel;
   finalRiskColor?: string;
 };
@@ -84,11 +94,15 @@ export type FinalizedTriageDetails = {
   nome_nivel: string;
   ponto_decisao_ativado: string;
   criterios_ponto_decisao: string[];
-  recursos_estimados: number;
   justificativa: string;
   createdAtDate: string;
   createdAtTime: string;
   aiRecommendedAction?: string | null;
+  aiSummary?: string | null;
+  aiResult?: JsonRecord | null;
+  professionalNotes?: string | null;
+  finalResult?: JsonRecord | null;
+  finalRiskClassification?: string | null;
 };
 
 const cpfSchema = z.object({ cpf: z.string().min(1) });
@@ -110,7 +124,7 @@ const professionalReviewSchema = z.object({
   triageId: z.number(),
   professionalId: z.string().optional(),
   professionalNotes: z.string().optional(),
-  finalResult: z.record(z.unknown()).optional(),
+  finalResult: z.record(z.any()).optional(),
   finalRiskClassification: esiLevelSchema,
   finalRiskColor: z.string().optional(),
 });
@@ -159,7 +173,7 @@ const pendingReviewTriageSchema = z.object({
   aiSuggestedRiskClassification: z.string().nullable(),
   aiSuggestedRiskColor: z.string().nullable(),
   aiRecommendedAction: z.string().nullable(),
-  aiResult: z.record(z.unknown()).nullable(),
+  aiResult: z.record(z.any()).nullable(),
   createdAt: z.string(),
   aiProcessedAt: z.string().nullable(),
   queueTriageId: z.number().nullable(),
@@ -193,11 +207,15 @@ const finalizedTriageDetailsSchema = z.object({
   nome_nivel: z.string(),
   ponto_decisao_ativado: z.string(),
   criterios_ponto_decisao: z.array(z.string()),
-  recursos_estimados: z.number(),
   justificativa: z.string(),
   createdAtDate: z.string(),
   createdAtTime: z.string(),
   aiRecommendedAction: z.string().nullable().optional(),
+  aiSummary: z.string().nullable().optional(),
+  aiResult: z.record(z.any()).nullable().optional(),
+  professionalNotes: z.string().nullable().optional(),
+  finalResult: z.record(z.any()).nullable().optional(),
+  finalRiskClassification: z.string().nullable().optional(),
 });
 
 const backendDatabaseErrorPattern = /tenant\/user postgres\.[\w-]+ not found/i;
@@ -377,8 +395,27 @@ function normalizePendingReviewTriage(triage: PendingReviewTriage): PendingRevie
 }
 
 function normalizeFinalizedTriageDetails(details: FinalizedTriageDetails): FinalizedTriageDetails {
+  const finalClassification = details.finalRiskClassification ?? details.classificacao;
+  const finalNotes = details.professionalNotes ?? readString(details.finalResult, "professionalNotes");
+  const finalJustification =
+    finalNotes ??
+    readString(details.finalResult, "justificativa") ??
+    readString(details.finalResult, "justification") ??
+    details.justificativa ??
+    details.aiSummary ??
+    "";
+
   return {
     ...details,
+    classificacao: finalClassification,
+    justificativa: restorePortugueseAccents(finalJustification) ?? "",
+    professionalNotes: restorePortugueseAccents(finalNotes),
+    aiSummary: restorePortugueseAccents(details.aiSummary),
     aiRecommendedAction: restorePortugueseAccents(details.aiRecommendedAction),
   };
+}
+
+function readString(record: JsonRecord | null | undefined, key: string) {
+  const value = record?.[key];
+  return typeof value === "string" && value.trim() ? value : null;
 }

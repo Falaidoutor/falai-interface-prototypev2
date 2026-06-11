@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import type { EsiLevel, PendingReviewTriage } from "@/lib/backend-api";
+import type { EsiLevel, JsonValue, PendingReviewTriage } from "@/lib/backend-api";
 import {
   Activity,
   ArrowDownCircle,
@@ -92,13 +92,13 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
     : 0;
 
   const confidence = useMemo(() => {
-    const raw = triage?.aiResult?.confidence ?? triage?.aiResult?.confianca;
-    return typeof raw === "number"
-      ? Math.max(0, Math.min(100, Math.round(raw * (raw <= 1 ? 100 : 1))))
-      : 78;
+    return extractConfidence(triage?.aiResult);
   }, [triage]);
 
   const extracted = useMemo(() => extractClinicalItems(triage?.aiResult), [triage?.aiResult]);
+  const aiLevel = toEsiLevel(triage?.aiSuggestedRiskClassification);
+  const higherAiLevel = aiLevel ? shiftLevel(aiLevel, -1) : null;
+  const lowerAiLevel = aiLevel ? shiftLevel(aiLevel, 1) : null;
 
   const shift = (dir: -1 | 1) => {
     if (!choice) return;
@@ -169,10 +169,16 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
                       <div className="mb-1.5 flex items-center justify-between text-xs">
                         <span className="font-medium text-foreground">Confiança da IA</span>
                         <span className="font-mono font-semibold text-foreground">
-                          {confidence}%
+                          {confidence === null ? "Não retornada" : `${confidence}%`}
                         </span>
                       </div>
-                      <Progress value={confidence} className="h-2" />
+                      {confidence === null ? (
+                        <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                          O backend não retornou um campo de confiança numérico no resultado da IA.
+                        </div>
+                      ) : (
+                        <Progress value={confidence} className="h-2" />
+                      )}
                     </div>
                     <div>
                       <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -226,36 +232,70 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
 
               <section>
                 <SectionTitle icon={Zap} title="Ações rápidas" />
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button
                     variant="outline"
                     size="sm"
                     className="justify-start gap-2"
+                    disabled={!aiLevel}
                     onClick={() => {
-                      setChoice("ESI-2");
-                      toast.success("Confirmado ESI-2");
+                      if (!aiLevel) return;
+                      setChoice(aiLevel);
+                      toast.success(`Sugestão da IA confirmada: ${aiLevel}`);
                     }}
                   >
                     <ShieldCheck className="h-4 w-4 text-primary" />
-                    Confirmar ESI-2
+                    Confirmar {aiLevel ?? "sugestão IA"}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="justify-start gap-2"
-                    onClick={() => shift(-1)}
+                    disabled={!higherAiLevel}
+                    onClick={() => {
+                      if (!higherAiLevel) return;
+                      setChoice(higherAiLevel);
+                      toast.info("Risco elevado a partir da IA", {
+                        description: `Nova classificação: ${higherAiLevel}.`,
+                      });
+                    }}
                   >
                     <ArrowUpCircle className="h-4 w-4 text-rose-500" />
-                    Elevar Risco
+                    Elevar para {higherAiLevel ?? "-"}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="justify-start gap-2"
-                    onClick={() => shift(1)}
+                    disabled={!lowerAiLevel}
+                    onClick={() => {
+                      if (!lowerAiLevel) return;
+                      setChoice(lowerAiLevel);
+                      toast.info("Risco rebaixado a partir da IA", {
+                        description: `Nova classificação: ${lowerAiLevel}.`,
+                      });
+                    }}
                   >
                     <ArrowDownCircle className="h-4 w-4 text-emerald-500" />
-                    Rebaixar Risco
+                    Rebaixar para {lowerAiLevel ?? "-"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="justify-start gap-2"
+                    disabled={!triage.aiRecommendedAction}
+                    onClick={() => {
+                      if (!triage.aiRecommendedAction) return;
+                      setNotes((current) =>
+                        current.trim()
+                          ? `${current.trim()}\n\nAção recomendada pela IA: ${triage.aiRecommendedAction}`
+                          : `Ação recomendada pela IA: ${triage.aiRecommendedAction}`,
+                      );
+                      toast.success("Ação da IA adicionada às observações");
+                    }}
+                  >
+                    <Activity className="h-4 w-4 text-primary" />
+                    Usar ação da IA
                   </Button>
                 </div>
               </section>
@@ -375,22 +415,104 @@ function toEsiLevel(value: string | null | undefined): EsiLevel | null {
   return null;
 }
 
-function extractClinicalItems(result: Record<string, unknown> | null | undefined) {
+function shiftLevel(level: EsiLevel, dir: -1 | 1): EsiLevel | null {
+  const idx = LEVELS.indexOf(level);
+  const next = idx + dir;
+  return LEVELS[next] ?? null;
+}
+
+function extractConfidence(result: Record<string, JsonValue> | null | undefined) {
+  if (!result) return null;
+
+  const candidates = [
+    result.confidence,
+    result.confianca,
+    result.confidenceScore,
+    result.score,
+    result.probability,
+    getNestedValue(result, ["metadata", "confidence"]),
+    getNestedValue(result, ["metadata", "confianca"]),
+    getNestedValue(result, ["classification", "confidence"]),
+    getNestedValue(result, ["classificacao", "confianca"]),
+  ];
+
+  for (const candidate of candidates) {
+    const value = toNumber(candidate);
+    if (value !== null) {
+      return Math.max(0, Math.min(100, Math.round(value * (value <= 1 ? 100 : 1))));
+    }
+  }
+
+  return null;
+}
+
+function extractClinicalItems(result: Record<string, JsonValue> | null | undefined) {
   if (!result) return [];
   const candidates = [
     result.symptoms,
     result.sintomas,
     result.extractedSymptoms,
+    result.extracted_symptoms,
     result.entidades,
     result.clinicalEntities,
+    result.clinical_entities,
+    result.entities,
+    result.keyFindings,
+    result.key_findings,
+    getNestedValue(result, ["extraction", "symptoms"]),
+    getNestedValue(result, ["extracao", "sintomas"]),
+    getNestedValue(result, ["clinical", "entities"]),
+    getNestedValue(result, ["analysis", "entities"]),
   ];
 
   return candidates
-    .flatMap((candidate) => {
-      if (Array.isArray(candidate)) return candidate;
-      if (typeof candidate === "string") return [candidate];
-      return [];
-    })
+    .flatMap((candidate) => flattenClinicalItem(candidate))
     .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    .map((item) => item.trim())
+    .filter((item, index, list) => list.indexOf(item) === index)
     .slice(0, 10);
+}
+
+function flattenClinicalItem(value: JsonValue | undefined): string[] {
+  if (typeof value === "string") return [value];
+  if (typeof value === "number" || typeof value === "boolean") return [String(value)];
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => flattenClinicalItem(item));
+  }
+
+  const label =
+    value.label ??
+    value.name ??
+    value.nome ??
+    value.value ??
+    value.valor ??
+    value.text ??
+    value.descricao ??
+    value.description;
+
+  return typeof label === "string" ? [label] : [];
+}
+
+function getNestedValue(value: JsonValue | undefined, path: string[]): JsonValue | undefined {
+  let current = value;
+
+  for (const key of path) {
+    if (!current || Array.isArray(current) || typeof current !== "object") {
+      return undefined;
+    }
+
+    current = current[key];
+  }
+
+  return current;
+}
+
+function toNumber(value: JsonValue | undefined): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return null;
+
+  const parsed = Number(value.replace("%", "").replace(",", ".").trim());
+  return Number.isFinite(parsed) ? parsed : null;
 }

@@ -55,6 +55,54 @@ function elapsed(date: string) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+function toReviewedQueueCase(
+  triage: PendingReviewTriage,
+  review: Pick<
+    ProfessionalReviewInput,
+    "finalRiskClassification" | "finalRiskColor" | "professionalNotes"
+  >,
+): MedicalQueueCase {
+  return {
+    queueId: triage.queueTriageId ?? triage.id,
+    triageId: triage.id,
+    source: "patient-triage",
+    name: triage.patientName,
+    gender: triage.patientGender,
+    age: triage.patientAge,
+    queueTicket: triage.queueTicket ?? `#${triage.id}`,
+    classificacao: review.finalRiskClassification,
+    prioridade: getPriorityLabel(review.finalRiskClassification),
+    status: "COMPLETED",
+  };
+}
+
+function upsertReviewedCase(rows: MedicalQueueCase[], reviewedCase: MedicalQueueCase) {
+  const key = getCaseKey(reviewedCase);
+  const existingIndex = rows.findIndex((item) => getCaseKey(item) === key);
+
+  if (existingIndex === -1) {
+    return [reviewedCase, ...rows];
+  }
+
+  return rows.map((item, index) => (index === existingIndex ? reviewedCase : item));
+}
+
+function getCaseKey(item: MedicalQueueCase) {
+  return `${item.source ?? "queue-triage"}-${item.triageId ?? item.queueId}`;
+}
+
+function getPriorityLabel(level: EsiLevel) {
+  const labels: Record<EsiLevel, string> = {
+    "ESI-1": "Imediata",
+    "ESI-2": "Muito alta",
+    "ESI-3": "Alta",
+    "ESI-4": "Moderada",
+    "ESI-5": "Baixa",
+  };
+
+  return labels[level];
+}
+
 function PainelPage() {
   const [activeTab, setActiveTab] = useState<PanelTab>("pending");
   const [pendingTriages, setPendingTriages] = useState<PendingReviewTriage[]>([]);
@@ -66,8 +114,8 @@ function PainelPage() {
   const [, setTick] = useState(0);
   const loadingQueueRef = useRef(false);
 
-  const load = async () => {
-    if (loadingQueueRef.current) return;
+  const load = async (force = false) => {
+    if (loadingQueueRef.current && !force) return;
     loadingQueueRef.current = true;
 
     try {
@@ -78,8 +126,10 @@ function PainelPage() {
       ]);
       setPendingTriages(pendingRows);
       setQueueCases(queueRows);
+      return { pendingRows, queueRows };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível carregar a fila clínica.");
+      return null;
     } finally {
       setLoading(false);
       loadingQueueRef.current = false;
@@ -147,6 +197,9 @@ function PainelPage() {
       "finalRiskClassification" | "finalRiskColor" | "professionalNotes"
     >,
   ) => {
+    const reviewedTriage = selected;
+    const reviewedCase = reviewedTriage ? toReviewedQueueCase(reviewedTriage, review) : null;
+
     await submitProfessionalReview({
       data: {
         triageId: id,
@@ -154,9 +207,19 @@ function PainelPage() {
         ...review,
       },
     });
+
+    if (reviewedCase) {
+      setPendingTriages((rows) => rows.filter((triage) => triage.id !== reviewedTriage?.id));
+      setQueueCases((rows) => upsertReviewedCase(rows, reviewedCase));
+    }
+
     setSelected(null);
     setActiveTab("analyzed");
-    await load();
+    await load(true);
+
+    if (reviewedCase) {
+      setQueueCases((rows) => upsertReviewedCase(rows, reviewedCase));
+    }
   };
 
   const criticalPending = pendingTriages.filter((triage) => {

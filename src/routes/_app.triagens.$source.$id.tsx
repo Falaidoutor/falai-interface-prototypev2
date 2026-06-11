@@ -111,10 +111,9 @@ function DetailsContent({ details }: { details: FinalizedTriageDetails }) {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2">
         <InfoCard label="Nível" value={details.nivel ? String(details.nivel) : "-"} />
         <InfoCard label="Nome do nível" value={details.nome_nivel || "-"} />
-        <InfoCard label="Recursos estimados" value={String(details.recursos_estimados ?? 0)} />
       </section>
 
       <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -125,11 +124,23 @@ function DetailsContent({ details }: { details: FinalizedTriageDetails }) {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Justificativa clínica</h2>
+        <h2 className="text-sm font-semibold text-foreground">Análise clínica</h2>
         <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-          {details.justificativa || "Sem justificativa registrada."}
+          {details.professionalNotes ||
+            details.justificativa ||
+            details.aiSummary ||
+            "Sem análise registrada."}
         </p>
       </section>
+
+      {details.professionalNotes && details.aiSummary && (
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground">Resumo original da IA</h2>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+            {details.aiSummary}
+          </p>
+        </section>
+      )}
 
       {details.aiRecommendedAction && (
         <section className="rounded-xl border border-border bg-card p-6 shadow-sm">

@@ -48,6 +48,10 @@ export const Route = createFileRoute("/_app/triagem-inicial")({
 type Msg = { role: "ai" | "user"; text: string };
 type Lang = "PT" | "EN" | "ES";
 type VoiceState = "idle" | "listening" | "processing";
+type VoiceSupport = {
+  supported: boolean;
+  reason?: string;
+};
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
@@ -60,6 +64,7 @@ type SpeechRecognitionLike = {
   onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
   onspeechend: (() => void) | null;
+  onnomatch?: (() => void) | null;
   start: () => void;
   stop: () => void;
   abort: () => void;
@@ -94,7 +99,7 @@ const GREETINGS: Record<Lang, string> = {
 function InitialTriagePage() {
   const navigate = useNavigate();
   const [cpf, setCpf] = useState("");
-  const [lang, setLang] = useState<Lang>("PT");
+  const [lang] = useState<Lang>("PT");
   const [highContrast, setHighContrast] = useState(false);
   const [largerText, setLargerText] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([{ role: "ai", text: GREETINGS.PT }]);
@@ -106,6 +111,7 @@ function InitialTriagePage() {
   const [loadingCpf, setLoadingCpf] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdTriage, setCreatedTriage] = useState<PatientTriage | null>(null);
+  const [voiceSupport, setVoiceSupport] = useState<VoiceSupport>({ supported: true });
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const normalizedCpf = useMemo(() => normalizeCpf(cpf).slice(0, 11), [cpf]);
@@ -146,6 +152,8 @@ function InitialTriagePage() {
   }, [auth?.patientName, firstName, lang]);
 
   useEffect(() => {
+    setVoiceSupport(getVoiceSupport());
+
     return () => {
       recognitionRef.current?.abort();
       recognitionRef.current = null;
@@ -224,18 +232,30 @@ function InitialTriagePage() {
     setVoice("idle");
   };
 
-  const startVoice = () => {
+  const startVoice = async () => {
     if (typeof window === "undefined" || isBlocked) return;
 
-    const speechWindow = window as SpeechRecognitionWindow;
-    const SpeechRecognition =
-      speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    const support = getVoiceSupport();
+    setVoiceSupport(support);
 
-    if (!SpeechRecognition) {
-      setError(
-        "Ditado por voz não está disponível neste navegador. Digite os sintomas no campo de texto.",
-      );
+    if (!support.supported) {
+      setError(support.reason ?? getUnsupportedVoiceMessage());
       return;
+    }
+
+    const SpeechRecognition = getSpeechRecognitionConstructor();
+    if (!SpeechRecognition) {
+      setError(getUnsupportedVoiceMessage());
+      return;
+    }
+
+    const mobileSafari = isMobileSafari();
+    if (!mobileSafari) {
+      const microphoneError = await ensureMicrophoneAccess();
+      if (microphoneError) {
+        setError(microphoneError);
+        return;
+      }
     }
 
     recognitionRef.current?.abort();
@@ -243,9 +263,10 @@ function InitialTriagePage() {
 
     const recognition = new SpeechRecognition();
     let finalTranscript = "";
+    let receivedSpeech = false;
 
     recognition.lang = getSpeechLanguage(lang);
-    recognition.interimResults = true;
+    recognition.interimResults = !mobileSafari;
     recognition.continuous = false;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
@@ -263,13 +284,20 @@ function InitialTriagePage() {
       }
 
       const transcript = (finalTranscript || interimTranscript).trim();
-      if (transcript) setInput(transcript);
+      if (transcript) {
+        receivedSpeech = true;
+        setInput(transcript);
+      }
     };
 
     recognition.onerror = (event) => {
       recognitionRef.current = null;
       setVoice("idle");
       setError(`Não foi possível capturar o áudio. ${getSpeechErrorMessage(event.error)}`);
+    };
+
+    recognition.onnomatch = () => {
+      setError("Não consegui entender o áudio. Fale mais perto do microfone ou digite os sintomas.");
     };
 
     recognition.onspeechend = () => {
@@ -280,7 +308,14 @@ function InitialTriagePage() {
     recognition.onend = () => {
       recognitionRef.current = null;
       setVoice("idle");
-      if (finalTranscript.trim()) setInput(finalTranscript.trim());
+      if (finalTranscript.trim()) {
+        setInput(finalTranscript.trim());
+        return;
+      }
+
+      if (!receivedSpeech) {
+        setError("Não detectei fala. Tente novamente ou digite os sintomas.");
+      }
     };
 
     setVoice("listening");
@@ -289,7 +324,7 @@ function InitialTriagePage() {
     } catch {
       recognitionRef.current = null;
       setVoice("idle");
-      setError("Não foi possível iniciar o ditado por voz. Tente novamente.");
+      setError("Não foi possível iniciar o ditado por voz. Tente novamente ou digite os sintomas.");
     }
   };
 
@@ -297,13 +332,24 @@ function InitialTriagePage() {
     <div
       className={cn(
         "flex min-h-[calc(100vh-3.5rem)] flex-col bg-gradient-to-b from-background to-accent/40",
-        highContrast && "contrast-125 saturate-150",
+        highContrast && "bg-background text-foreground",
         largerText && "text-[1.08em]",
       )}
     >
-      <div className="border-b border-border bg-card/80 backdrop-blur">
+      <div
+        className={cn(
+          "border-b border-border bg-card/80 backdrop-blur",
+          highContrast && "border-foreground bg-background",
+        )}
+      >
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-2.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span
+            className={cn(
+              "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
+              highContrast && "text-foreground",
+              largerText && "text-xs",
+            )}
+          >
             Acessibilidade
           </span>
           <div className="flex flex-wrap items-center gap-2">
@@ -312,24 +358,41 @@ function InitialTriagePage() {
               onClick={() => setHighContrast((value) => !value)}
               icon={<Contrast className="h-3.5 w-3.5" />}
               label="Alto contraste"
+              large={largerText}
+              pressedLabel={highContrast ? "Alto contraste ativado" : "Ativar alto contraste"}
             />
             <AccessButton
               active={largerText}
               onClick={() => setLargerText((value) => !value)}
               icon={<Type className="h-3.5 w-3.5" />}
               label="Texto maior"
+              large={largerText}
+              pressedLabel={largerText ? "Texto maior ativado" : "Ativar texto maior"}
             />
-            <div className="flex items-center gap-1 rounded-md border border-border bg-background p-0.5">
+            <div
+              className={cn(
+                "flex items-center gap-1 rounded-md border border-border bg-background p-0.5 opacity-60",
+                highContrast && "border-foreground bg-background opacity-70",
+              )}
+              aria-label="Seleção de idioma desabilitada temporariamente"
+            >
               <Languages className="ml-1.5 h-3.5 w-3.5 text-muted-foreground" />
               {(["PT", "EN", "ES"] as Lang[]).map((item) => (
                 <button
                   key={item}
-                  onClick={() => setLang(item)}
+                  type="button"
+                  disabled
+                  aria-disabled="true"
                   className={cn(
-                    "rounded px-2 py-1 text-xs font-medium transition-colors duration-200",
+                    "cursor-not-allowed rounded px-2 py-1 text-xs font-medium transition-colors duration-200",
+                    largerText && "text-sm",
                     lang === item
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      : "text-muted-foreground",
+                    highContrast &&
+                      (lang === item
+                        ? "bg-foreground text-background"
+                        : "text-foreground/70"),
                   )}
                 >
                   {item}
@@ -343,14 +406,38 @@ function InitialTriagePage() {
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-3xl">
           <div className="mb-6 text-center">
-            <h1 className="text-3xl font-bold text-foreground md:text-4xl">Triagem Inicial</h1>
-            <p className="mt-2 text-lg text-muted-foreground">
+            <h1
+              className={cn(
+                "text-3xl font-bold text-foreground md:text-4xl",
+                largerText && "text-4xl md:text-5xl",
+              )}
+            >
+              Triagem Inicial
+            </h1>
+            <p
+              className={cn(
+                "mt-2 text-lg text-muted-foreground",
+                highContrast && "text-foreground",
+                largerText && "text-xl",
+              )}
+            >
               Informe o paciente e descreva os sintomas para registrar a triagem.
             </p>
           </div>
 
-          <div className="mb-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div
+            className={cn(
+              "mb-4 rounded-xl border border-border bg-card p-4 shadow-sm",
+              highContrast && "border-2 border-foreground bg-background shadow-none",
+            )}
+          >
+            <label
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                highContrast && "text-foreground",
+                largerText && "text-sm",
+              )}
+            >
               CPF do paciente
             </label>
             <div className="relative mt-2">
@@ -370,12 +457,20 @@ function InitialTriagePage() {
                 placeholder="000.000.000-00"
                 inputMode="numeric"
                 maxLength={14}
-                className="h-11 w-full rounded-md border border-input bg-background px-3 pr-12 text-sm font-medium outline-none transition-colors focus:border-primary"
+                className={cn(
+                  "h-11 w-full rounded-md border border-input bg-background px-3 pr-12 text-sm font-medium outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring",
+                  highContrast && "border-2 border-foreground text-foreground focus:border-foreground",
+                  largerText && "h-12 text-base",
+                )}
               />
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-0 h-11 w-11"
+                className={cn(
+                  "absolute right-1 top-0 h-11 w-11",
+                  highContrast && "text-foreground hover:bg-foreground hover:text-background",
+                  largerText && "h-12 w-12",
+                )}
                 disabled={!canSearchCpf || loadingCpf || isBlocked}
                 onClick={() => void loadPatient()}
                 aria-label="Carregar paciente"
@@ -388,26 +483,58 @@ function InitialTriagePage() {
               </Button>
             </div>
             {auth?.patientName && (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p
+                className={cn(
+                  "mt-2 text-sm text-muted-foreground",
+                  highContrast && "text-foreground",
+                  largerText && "text-base",
+                )}
+              >
                 Paciente: <span className="font-medium text-foreground">{auth.patientName}</span>
               </p>
             )}
-            {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}
+            {error && (
+              <p
+                className={cn(
+                  "mt-2 text-sm font-medium text-destructive",
+                  highContrast && "font-bold text-foreground",
+                  largerText && "text-base",
+                )}
+              >
+                {error}
+              </p>
+            )}
           </div>
 
-          <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-lg">
-            <div className="flex h-[420px] flex-col gap-4 overflow-y-auto p-6">
+          <div
+            className={cn(
+              "overflow-hidden rounded-2xl border-2 border-border bg-card shadow-lg",
+              highContrast && "border-foreground bg-background shadow-none",
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-[420px] flex-col gap-4 overflow-y-auto p-6",
+                largerText && "h-[460px]",
+              )}
+            >
               {messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] whitespace-pre-line rounded-2xl px-5 py-4 text-lg leading-relaxed ${
+                    className={cn(
+                      "max-w-[85%] whitespace-pre-line rounded-2xl px-5 py-4 text-lg leading-relaxed",
+                      largerText && "max-w-[92%] text-xl leading-8",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-accent text-foreground"
-                    }`}
+                        : "bg-accent text-foreground",
+                      highContrast &&
+                        (message.role === "user"
+                          ? "border-2 border-foreground bg-foreground text-background"
+                          : "border-2 border-foreground bg-background text-foreground"),
+                    )}
                   >
                     {message.text}
                   </div>
@@ -415,7 +542,13 @@ function InitialTriagePage() {
               ))}
               {isSubmitting && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-2 rounded-2xl bg-accent px-5 py-4 text-muted-foreground">
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 rounded-2xl bg-accent px-5 py-4 text-muted-foreground",
+                      highContrast && "border-2 border-foreground bg-background text-foreground",
+                      largerText && "text-lg",
+                    )}
+                  >
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-base">Registrando triagem...</span>
                   </div>
@@ -423,15 +556,24 @@ function InitialTriagePage() {
               )}
             </div>
 
-            <div className="border-t border-border bg-background/60 p-4">
+            <div
+              className={cn(
+                "border-t border-border bg-background/60 p-4",
+                highContrast && "border-foreground bg-background",
+              )}
+            >
               {!isBlocked ? (
                 voice === "idle" ? (
-                  <div className="flex items-end gap-3">
+                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
                     <Textarea
                       value={input}
                       onChange={(event) => setInput(event.target.value)}
                       placeholder="Digite seus sintomas..."
-                      className="min-h-[72px] flex-1 resize-none border-2 text-lg"
+                      className={cn(
+                        "min-h-[72px] flex-1 resize-none border-2 text-lg focus:ring-2 focus:ring-ring",
+                        highContrast && "border-foreground text-foreground focus:border-foreground",
+                        largerText && "min-h-24 text-xl leading-8",
+                      )}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" && !event.shiftKey) {
                           event.preventDefault();
@@ -442,15 +584,24 @@ function InitialTriagePage() {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="h-[72px] w-[72px] shrink-0 border-2 transition-colors duration-200 hover:bg-primary/10"
+                      className={cn(
+                        "h-[72px] w-full shrink-0 border-2 transition-colors duration-200 hover:bg-primary/10 sm:w-[72px]",
+                        highContrast && "border-foreground text-foreground hover:bg-foreground hover:text-background",
+                        largerText && "h-20 sm:h-24 sm:w-24",
+                      )}
                       aria-label="Ditado por voz"
-                      onClick={startVoice}
+                      onClick={() => void startVoice()}
+                      title={voiceSupport.supported ? "Ditado por voz" : voiceSupport.reason}
                     >
                       <Mic className="!h-7 !w-7 text-primary" />
                     </Button>
                     <Button
                       size="lg"
-                      className="h-[72px] gap-2 px-6 text-lg"
+                      className={cn(
+                        "h-[72px] gap-2 px-6 text-lg",
+                        highContrast && "border-2 border-foreground bg-foreground text-background hover:bg-background hover:text-foreground",
+                        largerText && "h-20 px-8 text-xl sm:h-24",
+                      )}
                       onClick={() => void submitTriage()}
                       disabled={!canSubmit}
                     >
@@ -459,7 +610,12 @@ function InitialTriagePage() {
                     </Button>
                   </div>
                 ) : (
-                  <VoicePanel state={voice} onCancel={stopVoice} />
+                  <VoicePanel
+                    state={voice}
+                    onCancel={stopVoice}
+                    highContrast={highContrast}
+                    largerText={largerText}
+                  />
                 )
               ) : (
                 <div className="flex justify-end">
@@ -519,11 +675,84 @@ function getSpeechLanguage(lang: Lang) {
   return languages[lang];
 }
 
+function getSpeechRecognitionConstructor() {
+  if (typeof window === "undefined") return null;
+
+  const speechWindow = window as SpeechRecognitionWindow;
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
+}
+
+function getVoiceSupport(): VoiceSupport {
+  if (typeof window === "undefined") {
+    return { supported: false, reason: getUnsupportedVoiceMessage() };
+  }
+
+  if (!window.isSecureContext) {
+    return {
+      supported: false,
+      reason: "O ditado por voz precisa de HTTPS ou localhost para acessar o microfone.",
+    };
+  }
+
+  if (!getSpeechRecognitionConstructor()) {
+    return {
+      supported: false,
+      reason: getUnsupportedVoiceMessage(),
+    };
+  }
+
+  return { supported: true };
+}
+
+function getUnsupportedVoiceMessage() {
+  return "Este navegador nao oferece reconhecimento de fala nativo. Use Chrome, Edge ou Safari recente, ou digite os sintomas no campo de texto.";
+}
+
+async function ensureMicrophoneAccess() {
+  if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    return "Este navegador nao permite validar o microfone nesta pagina. Digite os sintomas ou tente outro navegador.";
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => track.stop());
+    return null;
+  } catch (error) {
+    const name = error instanceof DOMException ? error.name : "";
+
+    if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+      return "Permita o uso do microfone no navegador e tente novamente.";
+    }
+
+    if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+      return "Nenhum microfone foi encontrado neste dispositivo.";
+    }
+
+    if (name === "NotReadableError" || name === "TrackStartError") {
+      return "O microfone esta em uso por outro aplicativo ou indisponivel.";
+    }
+
+    return "Nao foi possivel acessar o microfone. Tente novamente ou digite os sintomas.";
+  }
+}
+
+function isMobileSafari() {
+  if (typeof navigator === "undefined") return false;
+
+  const userAgent = navigator.userAgent;
+  const isAppleMobile = /iPad|iPhone|iPod/.test(userAgent);
+  const isSafari = /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(userAgent);
+  return isAppleMobile && isSafari;
+}
+
 function getSpeechErrorMessage(error: string) {
   const messages: Record<string, string> = {
     "not-allowed": "Permita o uso do microfone para ditar os sintomas.",
     "no-speech": "Nenhuma fala foi detectada. Tente novamente falando mais perto do microfone.",
     "audio-capture": "Nenhum microfone foi encontrado ou ele está indisponível.",
+    aborted: "O ditado foi interrompido. Tente novamente quando estiver pronto.",
+    "service-not-allowed":
+      "O navegador bloqueou o serviço de reconhecimento de fala. Verifique permissões do site.",
     network: "O serviço de reconhecimento de fala não respondeu.",
   };
 
@@ -535,20 +764,28 @@ function AccessButton({
   onClick,
   icon,
   label,
+  large,
+  pressedLabel,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  large: boolean;
+  pressedLabel: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
+      aria-label={pressedLabel}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors duration-200",
+        "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background text-muted-foreground hover:text-foreground",
+          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+          : "border-border bg-background text-foreground hover:border-primary hover:bg-accent",
+        large && "px-4 py-2 text-sm",
       )}
     >
       {icon} {label}
@@ -559,34 +796,76 @@ function AccessButton({
 function VoicePanel({
   state,
   onCancel,
+  highContrast,
+  largerText,
 }: {
   state: "listening" | "processing";
   onCancel: () => void;
+  highContrast: boolean;
+  largerText: boolean;
 }) {
   return (
-    <div className="flex min-h-[72px] items-center gap-4 rounded-xl border-2 border-primary/40 bg-primary/5 px-5 py-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+    <div
+      className={cn(
+        "flex min-h-[72px] items-center gap-4 rounded-xl border-2 border-primary/40 bg-primary/5 px-5 py-3",
+        highContrast && "border-foreground bg-background text-foreground",
+        largerText && "min-h-24",
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground",
+          highContrast && "bg-foreground text-background",
+          largerText && "h-12 w-12",
+        )}
+      >
         <Mic className="h-5 w-5" />
       </div>
       <div className="flex-1">
         {state === "listening" ? (
           <>
-            <div className="text-sm font-semibold text-foreground">Escutando...</div>
+            <div className={cn("text-sm font-semibold text-foreground", largerText && "text-lg")}>
+              Escutando...
+            </div>
             <VoiceWave />
           </>
         ) : (
           <>
-            <div className="text-sm font-semibold text-foreground">Processando NLP...</div>
+            <div className={cn("text-sm font-semibold text-foreground", largerText && "text-lg")}>
+              Processando NLP...
+            </div>
             <div className="mt-2 flex items-center gap-2">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary/15">
-                <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
+                <div
+                  className={cn(
+                    "h-full w-1/2 animate-pulse rounded-full bg-primary",
+                    highContrast && "bg-foreground",
+                  )}
+                />
               </div>
-              <span className="text-xs font-medium text-muted-foreground">Extraindo sintomas</span>
+              <span
+                className={cn(
+                  "text-xs font-medium text-muted-foreground",
+                  highContrast && "text-foreground",
+                  largerText && "text-sm",
+                )}
+              >
+                Extraindo sintomas
+              </span>
             </div>
           </>
         )}
       </div>
-      <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Cancelar">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onCancel}
+        aria-label="Cancelar"
+        className={cn(
+          highContrast && "text-foreground hover:bg-foreground hover:text-background",
+          largerText && "h-12 w-12",
+        )}
+      >
         <X className="h-4 w-4" />
       </Button>
     </div>
