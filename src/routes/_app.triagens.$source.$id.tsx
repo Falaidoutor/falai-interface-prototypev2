@@ -142,15 +142,6 @@ function DetailsContent({ details }: { details: FinalizedTriageDetails }) {
         </section>
       )}
 
-      {details.aiRecommendedAction && (
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-sm font-semibold text-foreground">Ação recomendada pela IA</h2>
-          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-            {details.aiRecommendedAction}
-          </p>
-        </section>
-      )}
-
       {details.criterios_ponto_decisao.length > 0 && (
         <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Critérios do ponto de decisão</h2>
