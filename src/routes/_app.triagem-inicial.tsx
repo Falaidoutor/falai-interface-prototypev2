@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle2,
   Contrast,
-  Languages,
   Loader2,
   Mic,
   Search,
@@ -96,12 +95,15 @@ const GREETINGS: Record<Lang, string> = {
   ES: "Hola. Describa sus síntomas para iniciar una nueva triaje.",
 };
 
+const DEFAULT_LANG: Lang = "PT";
+
 function InitialTriagePage() {
   const [cpf, setCpf] = useState("");
-  const [lang] = useState<Lang>("PT");
   const [highContrast, setHighContrast] = useState(false);
   const [largerText, setLargerText] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([{ role: "ai", text: GREETINGS.PT }]);
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: "ai", text: GREETINGS[DEFAULT_LANG] },
+  ]);
   const [input, setInput] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,10 +147,10 @@ function InitialTriagePage() {
       if (current.length !== 1 || current[0].role !== "ai") return current;
       const text = auth?.patientName
         ? `Olá, ${firstName}! Descreva seus sintomas para iniciar uma nova triagem.`
-        : GREETINGS[lang];
+        : GREETINGS[DEFAULT_LANG];
       return current[0].text === text ? current : [{ role: "ai", text }];
     });
-  }, [auth?.patientName, firstName, lang]);
+  }, [auth?.patientName, firstName]);
 
   useEffect(() => {
     setVoiceSupport(getVoiceSupport());
@@ -264,7 +266,7 @@ function InitialTriagePage() {
     let finalTranscript = "";
     let receivedSpeech = false;
 
-    recognition.lang = getSpeechLanguage(lang);
+    recognition.lang = getSpeechLanguage(DEFAULT_LANG);
     recognition.interimResults = !mobileSafari;
     recognition.continuous = false;
     recognition.maxAlternatives = 1;
@@ -368,36 +370,6 @@ function InitialTriagePage() {
               large={largerText}
               pressedLabel={largerText ? "Texto maior ativado" : "Ativar texto maior"}
             />
-            <div
-              className={cn(
-                "flex items-center gap-1 rounded-md border border-border bg-background p-0.5 opacity-60",
-                highContrast && "border-foreground bg-background opacity-70",
-              )}
-              aria-label="Seleção de idioma desabilitada temporariamente"
-            >
-              <Languages className="ml-1.5 h-3.5 w-3.5 text-muted-foreground" />
-              {(["PT", "EN", "ES"] as Lang[]).map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  className={cn(
-                    "cursor-not-allowed rounded px-2 py-1 text-xs font-medium transition-colors duration-200",
-                    largerText && "text-sm",
-                    lang === item
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground",
-                    highContrast &&
-                      (lang === item
-                        ? "bg-foreground text-background"
-                        : "text-foreground/70"),
-                  )}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
