@@ -200,6 +200,8 @@ const finalizedTriageDetailsSchema = z.object({
   aiRecommendedAction: z.string().nullable().optional(),
 });
 
+const backendDatabaseErrorPattern = /tenant\/user postgres\.[\w-]+ not found/i;
+
 export const authenticatePatient = createServerFn({ method: "GET" })
   .inputValidator(cpfSchema)
   .handler(async ({ data }) => {
@@ -296,18 +298,19 @@ async function fetchBackend<T>(
   } catch (error) {
     const reason = error instanceof Error ? error.message : "erro de rede desconhecido";
     throw new Error(
-      `Não foi possível conectar ao backend em ${baseUrl}. Verifique FALAI_BACKEND_URL, se a API está online e se a Vercel consegue acessar esse host. Detalhe: ${reason}`,
+      `Nao foi possivel conectar ao backend. Verifique se a API esta online e tente novamente. Detalhe: ${reason}`,
     );
   }
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
+    console.error(`Backend respondeu HTTP ${response.status} em ${baseUrl}${path}`, text);
     const authHint =
       response.status === 401
         ? " Verifique se FALAI_BACKEND_APPLICATION_KEY está configurada com a mesma APPLICATION_KEY do backend."
         : "";
     throw new Error(
-      `Backend respondeu HTTP ${response.status} em ${baseUrl}${path}.${authHint}${text ? ` Resposta: ${text}` : ""}`,
+      getFriendlyBackendErrorMessage(response.status, text, authHint),
     );
   }
 
@@ -327,6 +330,38 @@ async function fetchBackend<T>(
   }
 
   return parsed.data;
+}
+
+function getFriendlyBackendErrorMessage(status: number, responseText: string, authHint: string) {
+  const backendMessage = getBackendMessage(responseText);
+
+  if (backendMessage && backendDatabaseErrorPattern.test(backendMessage)) {
+    return "Backend indisponivel: a base de dados do servidor nao esta configurada. Corrija o deploy do backend e tente novamente.";
+  }
+
+  if (status === 401) {
+    return `Backend recusou a autenticacao.${authHint}`;
+  }
+
+  if (status >= 500) {
+    return "Backend indisponivel no momento. Tente novamente mais tarde.";
+  }
+
+  return "Nao foi possivel concluir a solicitacao. Verifique os dados e tente novamente.";
+}
+
+function getBackendMessage(responseText: string) {
+  if (!responseText) return null;
+
+  try {
+    const payload = JSON.parse(responseText) as { message?: unknown };
+    if (Array.isArray(payload.message)) return payload.message.join(" ");
+    if (typeof payload.message === "string") return payload.message;
+  } catch {
+    return responseText;
+  }
+
+  return null;
 }
 
 function normalizeList<T>(response: T[] | { data?: T[] | null; triages?: T[] | null } | null) {
