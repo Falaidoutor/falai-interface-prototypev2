@@ -129,7 +129,7 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
 
   return (
     <Sheet open={!!triage} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
+      <SheetContent side="right" className="flex h-full w-full flex-col overflow-hidden sm:max-w-xl">
         {triage && (
           <>
             <SheetHeader className="space-y-2 border-b border-border pb-4">
@@ -148,7 +148,7 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
               </div>
             </SheetHeader>
 
-            <div className="space-y-6 py-5">
+            <div className="-mx-6 flex-1 space-y-6 overflow-y-auto px-6 py-5">
               <section>
                 <SectionTitle icon={FileText} title="Relato do paciente" />
                 <blockquote className="mt-3 rounded-md border-l-4 border-primary/60 bg-muted/50 p-4 text-sm leading-relaxed text-foreground">
@@ -364,7 +364,7 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
               </section>
             </div>
 
-            <SheetFooter className="sticky bottom-0 -mx-6 border-t border-border bg-card/95 px-6 py-4 backdrop-blur sm:justify-between">
+            <SheetFooter className="-mx-6 mt-auto shrink-0 border-t border-border bg-card px-6 py-4 sm:justify-between">
               <Button variant="ghost" onClick={onClose}>
                 Cancelar
               </Button>
