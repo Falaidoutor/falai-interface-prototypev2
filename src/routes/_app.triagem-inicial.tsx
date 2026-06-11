@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle2,
@@ -97,7 +97,6 @@ const GREETINGS: Record<Lang, string> = {
 };
 
 function InitialTriagePage() {
-  const navigate = useNavigate();
   const [cpf, setCpf] = useState("");
   const [lang] = useState<Lang>("PT");
   const [highContrast, setHighContrast] = useState(false);
@@ -640,9 +639,9 @@ function InitialTriagePage() {
               Sua triagem entrou na fila de processamento. Acompanhe o status em Minhas Triagens.
             </DialogDescription>
           </DialogHeader>
-          <div className="my-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-6 text-center">
+          <div className="my-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 px-4 py-6 text-center">
             <div className="text-sm font-medium text-muted-foreground">Sua senha</div>
-            <div className="mt-1 text-5xl font-bold tracking-tight text-primary">
+            <div className="mx-auto mt-1 max-w-full break-all text-4xl font-bold leading-tight tracking-tight text-primary sm:text-5xl">
               {createdTriage?.queueTicket}
             </div>
           </div>
@@ -653,7 +652,6 @@ function InitialTriagePage() {
             <Button
               onClick={() => {
                 setCreatedTriage(null);
-                void navigate({ to: "/totem" });
               }}
             >
               Entendi
