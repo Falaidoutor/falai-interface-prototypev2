@@ -64,19 +64,6 @@ function HomePage() {
             <Link to="/totem">Minhas triagens</Link>
           </Button>
         </div>
-
-        <dl className="mt-12 grid w-full max-w-3xl grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card">
-          {[
-            { v: "92%", l: "Acurácia da IA" },
-            { v: "−38%", l: "Tempo de espera" },
-            { v: "100%", l: "Casos revisados" },
-          ].map((s) => (
-            <div key={s.l} className="px-4 py-5">
-              <dt className="text-2xl font-bold text-foreground">{s.v}</dt>
-              <dd className="mt-1 text-xs text-muted-foreground">{s.l}</dd>
-            </div>
-          ))}
-        </dl>
       </section>
 
       <section className="mt-24">

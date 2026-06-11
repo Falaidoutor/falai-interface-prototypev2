@@ -13,7 +13,7 @@ import { MANCHESTER_META, type ManchesterLevel } from "@/lib/mock-patients";
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({
     meta: [
-      { title: "Analytics — FalAI Doutor" },
+      { title: "Gestão & Analytics - Protótipo" },
       {
         name: "description",
         content:
@@ -82,7 +82,7 @@ function AnalyticsPage() {
     <div className="p-6 md:p-8">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          Gestão & Analytics
+          Gestão & Analytics - Protótipo
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Visão executiva do desempenho da triagem assistida por IA

@@ -1,6 +1,15 @@
 # FalAI Triage
 
-Frontend React com Vite e TanStack Start, configurado para deploy na Vercel.
+Frontend:
+
+- React 19
+- Vite
+- TanStack Start
+- TypeScript
+- Tailwind CSS
+- Radix UI / shadcn-style components
+
+Configurado para deploy na Vercel.
 
 ## Scripts
 

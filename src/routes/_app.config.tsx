@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_app/config")({
   head: () => ({
     meta: [
-      { title: "Configurações do Modelo - FalAI Doutor" },
+      { title: "Configurações do Modelo - Protótipo" },
       {
         name: "description",
         content:
@@ -105,7 +105,7 @@ function ConfigPage() {
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             <Cpu className="h-6 w-6 text-primary" />
-            Configurações do Modelo
+            Configurações do Modelo - Protótipo
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Console administrativo de LLMs, parâmetros de inferência e comportamento de triagem.
