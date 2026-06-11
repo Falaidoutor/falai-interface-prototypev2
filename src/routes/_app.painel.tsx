@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PatientAnalysisSheet } from "@/components/triage/PatientAnalysisSheet";
-import { AlertCircle, ClipboardCheck, Clock, Eye, Loader2, Search } from "lucide-react";
+import { AlertCircle, ClipboardCheck, Eye, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   listMedicalQueueCases,
@@ -383,7 +383,6 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
             <TableHead className="w-[100px]">Fila</TableHead>
             <TableHead>Paciente</TableHead>
             <TableHead className="w-[160px]">Risco Confirmado</TableHead>
-            <TableHead className="w-[120px]">Prioridade</TableHead>
             <TableHead className="w-[160px]">Origem</TableHead>
             <TableHead className="w-[120px] text-right">Ação</TableHead>
           </TableRow>
@@ -405,12 +404,6 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
               </TableCell>
               <TableCell>
                 <RiskBadge value={item.classificacao} />
-              </TableCell>
-              <TableCell>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  {item.prioridade || "-"}
-                </span>
               </TableCell>
               <TableCell>
                 <span className="text-xs text-muted-foreground">
