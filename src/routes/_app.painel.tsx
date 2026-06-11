@@ -382,7 +382,7 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
           <TableRow className="bg-muted/40 hover:bg-muted/40">
             <TableHead className="w-[100px]">Fila</TableHead>
             <TableHead>Paciente</TableHead>
-            <TableHead className="w-[160px]">Risco Confirmado</TableHead>
+            <TableHead className="w-[220px]">Risco Confirmado</TableHead>
             <TableHead className="w-[160px]">Origem</TableHead>
             <TableHead className="w-[120px] text-right">Ação</TableHead>
           </TableRow>
@@ -403,7 +403,7 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
                 </div>
               </TableCell>
               <TableCell>
-                <RiskBadge value={item.classificacao} />
+                <RiskBadge value={item.classificacao} showDescription />
               </TableCell>
               <TableCell>
                 <span className="text-xs text-muted-foreground">
@@ -470,7 +470,13 @@ function PanelState({ icon, title }: { icon: React.ReactNode; title: string }) {
   );
 }
 
-function RiskBadge({ value }: { value: string | null }) {
+function RiskBadge({
+  value,
+  showDescription = false,
+}: {
+  value: string | null;
+  showDescription?: boolean;
+}) {
   const level = toEsiLevel(value);
   const tone: Record<EsiLevel, string> = {
     "ESI-1": "bg-rose-500/10 text-rose-700 dark:text-rose-400",
@@ -478,6 +484,13 @@ function RiskBadge({ value }: { value: string | null }) {
     "ESI-3": "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
     "ESI-4": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
     "ESI-5": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  };
+  const descriptions: Record<EsiLevel, string> = {
+    "ESI-1": "Ressuscitação",
+    "ESI-2": "Emergente",
+    "ESI-3": "Urgente",
+    "ESI-4": "Menos urgente",
+    "ESI-5": "Não urgente",
   };
 
   if (!level) {
@@ -489,8 +502,13 @@ function RiskBadge({ value }: { value: string | null }) {
   }
 
   return (
-    <span className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${tone[level]}`}>
-      {level}
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${tone[level]}`}
+    >
+      <span>{level}</span>
+      {showDescription ? (
+        <span className="border-l border-current/30 pl-1.5">{descriptions[level]}</span>
+      ) : null}
     </span>
   );
 }
