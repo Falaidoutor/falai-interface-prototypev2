@@ -225,7 +225,7 @@ function ConfigPage() {
                 />
                 <RangeField
                   label="Top-p"
-                  hint="Nucleus sampling"
+                  hint="0.1 focado · 1.0 abrangente"
                   value={topP}
                   onChange={setTopP}
                   min={0.1}
