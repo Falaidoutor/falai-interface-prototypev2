@@ -33,7 +33,7 @@ const flow = [
     icon: ShieldCheck,
     step: "03",
     title: "Validação Humana",
-    text: "Médico ou enfermeiro revisa raciocínio da IA no painel clínico, confirma ou ajusta classificação e encaminha o paciente.",
+    text: "Especialista revisa raciocínio da IA no painel clínico, confirma ou ajusta classificação e encaminha o paciente.",
   },
 ];
 

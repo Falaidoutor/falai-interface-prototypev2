@@ -65,7 +65,7 @@ export const MOCK_PATIENTS: Patient[] = [
       "Dor torácica intensa em aperto irradiando para o braço esquerdo há cerca de 20 minutos, sudorese fria e falta de ar.",
     aiClassification: "emergency",
     aiJustification:
-      "Quadro compatível com Síndrome Coronariana Aguda. Combinação de dor torácica típica, irradiação braquial e sintomas neurovegetativos exige avaliação médica imediata e ECG em até 10 minutos.",
+      "Quadro compatível com Síndrome Coronariana Aguda. Combinação de dor torácica típica, irradiação braquial e sintomas neurovegetativos exige avaliação imediata do especialista e ECG em até 10 minutos.",
     extractedSymptoms: [
       "Dor torácica em aperto",
       "Irradiação braço esquerdo",
@@ -170,7 +170,7 @@ export const MOCK_PATIENTS: Patient[] = [
       "Dispneia progressiva há 3 horas, edema de membros inferiores, ortopneia. Histórico de insuficiência cardíaca.",
     aiClassification: "very-urgent",
     aiJustification:
-      "Descompensação aguda de insuficiência cardíaca com sinais de congestão. Necessita oxigenoterapia e avaliação médica em até 10 minutos.",
+      "Descompensação aguda de insuficiência cardíaca com sinais de congestão. Necessita oxigenoterapia e avaliação do especialista em até 10 minutos.",
     extractedSymptoms: ["Dispneia progressiva", "Edema MMII", "Ortopneia", "ICC prévia"],
     esiCriteria: [
       "ESI Nível 2 — Alto risco",

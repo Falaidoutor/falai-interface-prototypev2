@@ -81,14 +81,14 @@ export function AppHeader() {
               {initials}
             </div>
             <div className="hidden text-left text-xs leading-tight sm:block">
-              <div className="font-semibold text-foreground">{user?.name ?? "Usuário"}</div>
+              <div className="font-semibold text-foreground">{user?.name ?? "Paciente"}</div>
               <div className="text-[10px] text-muted-foreground">{user?.role ?? "Sistema"}</div>
             </div>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel>
-              <div className="text-sm font-semibold">{user?.name ?? "Usuário"}</div>
+              <div className="text-sm font-semibold">{user?.name ?? "Paciente"}</div>
               <div className="text-xs font-normal text-muted-foreground">
                 {user?.username ?? "admin"} - {user?.role ?? "Sistema"}
               </div>

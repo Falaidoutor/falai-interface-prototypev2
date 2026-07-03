@@ -76,14 +76,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "FalAI Triage is an AI-powered medical triage system that analyzes patient symptoms against clinical guidelines.",
+          "FalAI Triage is an AI-powered clinical triage system that analyzes patient symptoms against clinical guidelines.",
       },
       { name: "author", content: "FalAI" },
       { property: "og:title", content: "FalAI Triage" },
       {
         property: "og:description",
         content:
-          "FalAI Triage is an AI-powered medical triage system that analyzes patient symptoms against clinical guidelines.",
+          "FalAI Triage is an AI-powered clinical triage system that analyzes patient symptoms against clinical guidelines.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "twitter:description",
         content:
-          "FalAI Triage is an AI-powered medical triage system that analyzes patient symptoms against clinical guidelines.",
+          "FalAI Triage is an AI-powered clinical triage system that analyzes patient symptoms against clinical guidelines.",
       },
     ],
     links: [

@@ -39,7 +39,7 @@ function LoginPage() {
     const user = authenticateMockUser(username, password);
     if (!user) {
       setSubmitting(false);
-      setError("Usuário ou senha inválidos.");
+      setError("Paciente ou senha inválidos.");
       return;
     }
 
@@ -64,7 +64,7 @@ function LoginPage() {
         <form className="space-y-4" onSubmit={submit}>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Usuário
+              Paciente
             </label>
             <div className="relative mt-2">
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

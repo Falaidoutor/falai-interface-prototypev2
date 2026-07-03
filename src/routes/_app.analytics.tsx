@@ -197,7 +197,7 @@ function AnalyticsPage() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Concordância IA × Médico</h2>
+        <h2 className="text-sm font-semibold text-foreground">Concordância IA × Especialista</h2>
         <p className="text-xs text-muted-foreground">
           Comparativo entre classificação sugerida e validação clínica final
         </p>
