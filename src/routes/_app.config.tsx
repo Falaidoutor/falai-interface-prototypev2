@@ -110,7 +110,7 @@ Regras obrigatórias:
 5. Em caso de baixa confiança, retorne escalonamento manual.`;
 
 function ConfigPage() {
-  const [tab, setTab] = useState<Tab>("status");
+  const [tab] = useState<Tab>("prompt");
   const [temperature, setTemperature] = useState(0.2);
   const [topP, setTopP] = useState(0.9);
   const [ragEnabled, setRagEnabled] = useState(true);
@@ -204,13 +204,12 @@ function ConfigPage() {
         </div>
       ) : null}
 
+      {/* Status dos Modelos permanece temporariamente comentado até que seus dados reais estejam disponíveis. */}
       <div className="mb-6 inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground">
-        <TabButton active={tab === "status"} onClick={() => setTab("status")} icon={Activity}>
-          Status dos Modelos
-        </TabButton>
-        <TabButton active={tab === "prompt"} onClick={() => setTab("prompt")} icon={FileCode2}>
+        <span className="inline-flex items-center gap-2 rounded-md bg-background px-3 py-1.5 font-medium text-foreground shadow-sm">
+          <FileCode2 className="h-4 w-4" />
           Ajuste de Prompt / RAG
-        </TabButton>
+        </span>
       </div>
 
       {tab === "status" ? (
