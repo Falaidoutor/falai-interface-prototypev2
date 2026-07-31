@@ -18,7 +18,7 @@ import { getAnalyticsMetrics, type AnalyticsMetrics } from "@/lib/backend-api";
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({
     meta: [
-      { title: "Gestão & Analytics - Protótipo" },
+      { title: "Gestão & Analytics" },
       {
         name: "description",
         content:
@@ -172,7 +172,7 @@ function AnalyticsPage() {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          Gestão & Analytics - Protótipo
+          Gestão & Analytics
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Visão executiva do desempenho da triagem assistida por IA
@@ -181,7 +181,7 @@ function AnalyticsPage() {
         <div className="flex flex-col items-end gap-2">
           <div className="inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground" role="group" aria-label="Fonte dos dados">
             <button type="button" onClick={() => setDataMode("mock")} aria-pressed={dataMode === "mock"} className={`rounded-md px-3 py-1.5 font-medium transition-colors ${dataMode === "mock" ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"}`}>
-              Protótipo
+              Dados mockados
             </button>
             <button type="button" onClick={() => setDataMode("real")} aria-pressed={dataMode === "real"} className={`rounded-md px-3 py-1.5 font-medium transition-colors ${dataMode === "real" ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"}`}>
               Dados reais

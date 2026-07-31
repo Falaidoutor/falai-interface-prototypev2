@@ -300,6 +300,8 @@ const updateModelConfigSchema = modelConfigSchema.pick({
 });
 
 const backendDatabaseErrorPattern = /tenant\/user postgres\.[\w-]+ not found/i;
+const backendModelConfigSchemaErrorPattern = /Data type "Object" in "ModelParameterVersion\.(versionLabel|createdBy)" is not supported/i;
+const backendModelConfigTableErrorPattern = /relation .*model_parameter_versions.* does not exist/i;
 
 export const authenticatePatient = createServerFn({ method: "GET" })
   .inputValidator(cpfSchema)
@@ -454,6 +456,14 @@ function getFriendlyBackendErrorMessage(status: number, responseText: string, au
 
   if (backendMessage && backendDatabaseErrorPattern.test(backendMessage)) {
     return "Backend indisponivel: a base de dados do servidor nao esta configurada. Corrija o deploy do backend e tente novamente.";
+  }
+
+  if (backendMessage && backendModelConfigSchemaErrorPattern.test(backendMessage)) {
+    return "Backend desatualizado: publique novamente o backend com a correção da tabela de configurações do modelo.";
+  }
+
+  if (backendMessage && backendModelConfigTableErrorPattern.test(backendMessage)) {
+    return "A tabela de versões do modelo ainda não foi criada no banco de dados.";
   }
 
   if (status === 401) {
