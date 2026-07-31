@@ -79,6 +79,12 @@ const mockHourly = [
 // 16 points over the next 4 hours, every 15 minutes
 const mockForecastDemand = [18, 21, 24, 28, 31, 34, 36, 38, 39, 40, 38, 36, 33, 30, 27, 25];
 const mockStaffingCapacity = Array.from({ length: 16 }, () => 32);
+const qualityPeriodLabels = {
+  today: "Hoje (00h–agora)",
+  yesterday: "Ontem (00h–24h)",
+  last7d: "Últimos 7 dias",
+  last30d: "Últimos 30 dias",
+} as const;
 
 function metric(
   icon: typeof Users,
@@ -118,6 +124,7 @@ function toManchesterLevel(level: string): ManchesterLevel {
 function AnalyticsPage() {
   const [dataMode, setDataMode] = useState<"mock" | "real">("mock");
   const [realData, setRealData] = useState<AnalyticsMetrics | null>(null);
+  const [qualityPeriod, setQualityPeriod] = useState<AnalyticsMetrics["qualityPeriod"]>("today");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,7 +132,7 @@ function AnalyticsPage() {
     setLoading(true);
     setError(null);
     try {
-      setRealData(await getAnalyticsMetrics());
+      setRealData(await getAnalyticsMetrics({ data: { qualityPeriod } }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível carregar as métricas reais.");
     } finally {
@@ -134,19 +141,24 @@ function AnalyticsPage() {
   };
 
   useEffect(() => {
-    if (dataMode === "real" && !realData) void loadRealData();
-  }, [dataMode]);
+    if (dataMode === "real" && (!realData || realData.qualityPeriod !== qualityPeriod)) {
+      void loadRealData();
+    }
+  }, [dataMode, qualityPeriod]);
 
-  const usingRealData = dataMode === "real" && !!realData;
+  const usingRealData = dataMode === "real" && realData?.qualityPeriod === qualityPeriod;
+  const qualityPeriodLabel = usingRealData
+    ? realData!.qualityPeriodLabel
+    : qualityPeriodLabels[qualityPeriod];
   const metrics = useMemo(() => {
-    if (!realData) return mockMetrics;
+    if (!usingRealData) return mockMetrics;
     return [
       metric(Users, "Pacientes hoje", formatNumber(realData.patientsToday), realData.patientsTodayDelta, "vs ontem", true),
-      metric(Clock, "Tempo médio de espera", formatMinutes(realData.averageWaitMinutes), realData.averageWaitDelta, "vs período anterior", false),
-      metric(Sparkles, "Acurácia da IA", formatPercent(realData.aiAccuracy), realData.aiAccuracyDelta, "casos revisados", true),
-      metric(AlertTriangle, "Casos críticos", formatNumber(realData.criticalCases), realData.criticalCasesDelta, "últimas 24h", false),
+      metric(Clock, "Tempo médio de espera", formatMinutes(realData.averageWaitMinutes), realData.averageWaitDelta, "hoje vs ontem", false),
+      metric(Sparkles, "Acurácia da IA", formatPercent(realData.aiAccuracy), realData.aiAccuracyDelta, qualityPeriodLabel, true),
+      metric(AlertTriangle, "Casos críticos", formatNumber(realData.criticalCases), realData.criticalCasesDelta, "hoje vs ontem", false),
     ];
-  }, [realData]);
+  }, [realData, usingRealData, qualityPeriodLabel]);
   const riskBars = usingRealData
     ? realData!.riskDistribution.map(({ level, count }) => ({ level: toManchesterLevel(level), count }))
     : mockRiskBars;
@@ -195,6 +207,24 @@ function AnalyticsPage() {
 
       {dataMode === "real" && loading ? <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin text-primary" /> Carregando métricas reais...</div> : null}
       {dataMode === "real" && error ? <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-700 dark:text-rose-300"><span className="flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {error}</span><button type="button" onClick={() => void loadRealData()} className="inline-flex items-center gap-1 font-semibold"><RefreshCw className="h-3.5 w-3.5" /> Tentar novamente</button></div> : null}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+        <div>
+          <div className="text-xs font-semibold text-foreground">Faixa de análise da qualidade da IA</div>
+          <div className="text-[11px] text-muted-foreground">Aplica-se à Acurácia da IA e à Concordância IA × Especialista.</div>
+        </div>
+        <select
+          value={qualityPeriod}
+          onChange={(event) => setQualityPeriod(event.target.value as AnalyticsMetrics["qualityPeriod"])}
+          className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+          aria-label="Faixa de análise da qualidade da IA"
+        >
+          <option value="today">Hoje (00h–agora)</option>
+          <option value="yesterday">Ontem (00h–24h)</option>
+          <option value="last7d">Últimos 7 dias</option>
+          <option value="last30d">Últimos 30 dias</option>
+        </select>
+      </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
@@ -262,7 +292,7 @@ function AnalyticsPage() {
               Atendimentos por nível de risco
             </h2>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Últimas 24h
+              Hoje (00h → agora)
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Distribuição segundo Protocolo Manchester</p>
@@ -306,7 +336,7 @@ function AnalyticsPage() {
       <section className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
         <h2 className="text-sm font-semibold text-foreground">Concordância IA × Especialista</h2>
         <p className="text-xs text-muted-foreground">
-          Comparativo entre classificação sugerida e validação clínica final
+          Comparativo entre classificação sugerida e validação clínica final · Faixa analisada: {qualityPeriodLabel}
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           {[

@@ -120,6 +120,10 @@ export type AnalyticsMetrics = {
   forecastDemand: number[];
   staffingCapacity: number[];
   agreement: { total: number | null; oneLevel: number | null; broad: number | null };
+  qualityPeriod: "today" | "yesterday" | "last7d" | "last30d";
+  qualityPeriodLabel: string;
+  qualityStart: string;
+  qualityEnd: string;
 };
 
 export type ModelConfig = {
@@ -269,6 +273,14 @@ const analyticsMetricsSchema: z.ZodType<AnalyticsMetrics> = z.object({
     oneLevel: z.number().nullable(),
     broad: z.number().nullable(),
   }),
+  qualityPeriod: z.enum(["today", "yesterday", "last7d", "last30d"]),
+  qualityPeriodLabel: z.string(),
+  qualityStart: z.string(),
+  qualityEnd: z.string(),
+});
+
+const analyticsMetricsInputSchema = z.object({
+  qualityPeriod: z.enum(["today", "yesterday", "last7d", "last30d"]),
 });
 
 const modelConfigSchema = z.object({
@@ -369,9 +381,15 @@ export const getFinalizedTriageDetails = createServerFn({ method: "GET" })
     return normalizeFinalizedTriageDetails(details);
   });
 
-export const getAnalyticsMetrics = createServerFn({ method: "GET" }).handler(async () => {
-  return fetchBackend("/analytics/metrics", {}, analyticsMetricsSchema);
-});
+export const getAnalyticsMetrics = createServerFn({ method: "GET" })
+  .inputValidator(analyticsMetricsInputSchema)
+  .handler(async ({ data }) => {
+    return fetchBackend(
+      `/analytics/metrics?qualityPeriod=${encodeURIComponent(data.qualityPeriod)}`,
+      {},
+      analyticsMetricsSchema,
+    );
+  });
 
 export const getModelConfig = createServerFn({ method: "GET" }).handler(async () => {
   return fetchBackend("/model-config", {}, modelConfigSchema);
