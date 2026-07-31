@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   Clock,
@@ -7,8 +8,12 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { MANCHESTER_META, type ManchesterLevel } from "@/lib/mock-patients";
+import { getAnalyticsMetrics, type AnalyticsMetrics } from "@/lib/backend-api";
 
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({
@@ -24,7 +29,7 @@ export const Route = createFileRoute("/_app/analytics")({
   component: AnalyticsPage,
 });
 
-const metrics = [
+const mockMetrics = [
   {
     icon: Users,
     label: "Pacientes hoje",
@@ -59,7 +64,7 @@ const metrics = [
   },
 ];
 
-const riskBars: { level: ManchesterLevel; count: number }[] = [
+const mockRiskBars: { level: ManchesterLevel; count: number }[] = [
   { level: "emergency", count: 6 },
   { level: "very-urgent", count: 22 },
   { level: "urgent", count: 78 },
@@ -67,27 +72,129 @@ const riskBars: { level: ManchesterLevel; count: number }[] = [
   { level: "non-urgent", count: 46 },
 ];
 
-const hourly = [
+const mockHourly = [
   4, 6, 5, 4, 3, 5, 8, 14, 22, 28, 31, 34, 30, 26, 22, 24, 27, 32, 29, 21, 16, 12, 9, 7,
 ];
 
 // 16 points over the next 4 hours, every 15 minutes
-const forecastDemand = [18, 21, 24, 28, 31, 34, 36, 38, 39, 40, 38, 36, 33, 30, 27, 25];
-const staffingCapacity = Array.from({ length: 16 }, () => 32);
+const mockForecastDemand = [18, 21, 24, 28, 31, 34, 36, 38, 39, 40, 38, 36, 33, 30, 27, 25];
+const mockStaffingCapacity = Array.from({ length: 16 }, () => 32);
+
+function metric(
+  icon: typeof Users,
+  label: string,
+  value: string,
+  delta: number | null,
+  sub: string,
+  positiveIsUp: boolean,
+) {
+  const up = delta === null ? true : positiveIsUp ? delta >= 0 : delta <= 0;
+  return { icon, label, value, delta: delta === null ? "—" : (delta >= 0 ? "+" : "−") + formatNumber(Math.abs(delta)) + "%", up, sub };
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(value);
+}
+
+function formatMinutes(value: number | null) {
+  return value === null ? "—" : formatNumber(value) + " min";
+}
+
+function formatPercent(value: number | null) {
+  return value === null ? "—" : formatNumber(value) + "%";
+}
+
+function toManchesterLevel(level: string): ManchesterLevel {
+  const levels: Record<string, ManchesterLevel> = {
+    "ESI-1": "emergency",
+    "ESI-2": "very-urgent",
+    "ESI-3": "urgent",
+    "ESI-4": "standard",
+    "ESI-5": "non-urgent",
+  };
+  return levels[level] ?? "standard";
+}
 
 function AnalyticsPage() {
-  const maxBar = Math.max(...riskBars.map((r) => r.count));
+  const [dataMode, setDataMode] = useState<"mock" | "real">("mock");
+  const [realData, setRealData] = useState<AnalyticsMetrics | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRealData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setRealData(await getAnalyticsMetrics());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível carregar as métricas reais.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (dataMode === "real" && !realData) void loadRealData();
+  }, [dataMode]);
+
+  const usingRealData = dataMode === "real" && !!realData;
+  const metrics = useMemo(() => {
+    if (!realData) return mockMetrics;
+    return [
+      metric(Users, "Pacientes hoje", formatNumber(realData.patientsToday), realData.patientsTodayDelta, "vs ontem", true),
+      metric(Clock, "Tempo médio de espera", formatMinutes(realData.averageWaitMinutes), realData.averageWaitDelta, "vs período anterior", false),
+      metric(Sparkles, "Acurácia da IA", formatPercent(realData.aiAccuracy), realData.aiAccuracyDelta, "casos revisados", true),
+      metric(AlertTriangle, "Casos críticos", formatNumber(realData.criticalCases), realData.criticalCasesDelta, "últimas 24h", false),
+    ];
+  }, [realData]);
+  const riskBars = usingRealData
+    ? realData!.riskDistribution.map(({ level, count }) => ({ level: toManchesterLevel(level), count }))
+    : mockRiskBars;
+  const hourly = usingRealData ? realData!.hourlyVolume : mockHourly;
+  const forecastDemand = usingRealData ? realData!.forecastDemand : mockForecastDemand;
+  const staffingCapacity = usingRealData ? realData!.staffingCapacity : mockStaffingCapacity;
+  const maxBar = Math.max(1, ...riskBars.map((r) => r.count));
+
+  const agreementCards = usingRealData
+    ? [
+        { l: "Concordância total", v: formatPercent(realData!.agreement.total), c: "bg-emerald-500", d: null, up: true },
+        { l: "Ajuste de 1 nível", v: formatPercent(realData!.agreement.oneLevel), c: "bg-amber-500", d: null, up: true },
+        { l: "Reclassificação ampla", v: formatPercent(realData!.agreement.broad), c: "bg-rose-500", d: null, up: true },
+      ]
+    : [
+        { l: "Concordância total", v: "82,1%", c: "bg-emerald-500", d: "+2,3%", up: true },
+        { l: "Ajuste de 1 nível", v: "13,5%", c: "bg-amber-500", d: "−1,1%", up: true },
+        { l: "Reclassificação ampla", v: "4,4%", c: "bg-rose-500", d: "−0,8%", up: true },
+      ];
 
   return (
     <div className="p-6 md:p-8">
-      <header className="mb-6">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
           Gestão & Analytics - Protótipo
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Visão executiva do desempenho da triagem assistida por IA
         </p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <div className="inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground" role="group" aria-label="Fonte dos dados">
+            <button type="button" onClick={() => setDataMode("mock")} aria-pressed={dataMode === "mock"} className={`rounded-md px-3 py-1.5 font-medium transition-colors ${dataMode === "mock" ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"}`}>
+              Protótipo
+            </button>
+            <button type="button" onClick={() => setDataMode("real")} aria-pressed={dataMode === "real"} className={`rounded-md px-3 py-1.5 font-medium transition-colors ${dataMode === "real" ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"}`}>
+              Dados reais
+            </button>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {dataMode === "mock" ? "Dados prontos para demonstração" : realData ? `Atualizado às ${new Date(realData.generatedAt).toLocaleTimeString("pt-BR")}` : "Consultando o backend..."}
+          </span>
+        </div>
       </header>
+
+      {dataMode === "real" && loading ? <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin text-primary" /> Carregando métricas reais...</div> : null}
+      {dataMode === "real" && error ? <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-700 dark:text-rose-300"><span className="flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {error}</span><button type="button" onClick={() => void loadRealData()} className="inline-flex items-center gap-1 font-semibold"><RefreshCw className="h-3.5 w-3.5" /> Tentar novamente</button></div> : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
@@ -205,21 +312,21 @@ function AnalyticsPage() {
           {[
             {
               l: "Concordância total",
-              v: "82,1%",
+              v: usingRealData ? formatPercent(realData!.agreement.total) : "82,1%",
               c: "bg-emerald-500",
               d: "+2,3%",
               up: true,
             },
             {
               l: "Ajuste de 1 nível",
-              v: "13,5%",
+              v: usingRealData ? formatPercent(realData!.agreement.oneLevel) : "13,5%",
               c: "bg-amber-500",
               d: "−1,1%",
               up: true,
             },
             {
               l: "Reclassificação ampla",
-              v: "4,4%",
+              v: usingRealData ? formatPercent(realData!.agreement.broad) : "4,4%",
               c: "bg-rose-500",
               d: "−0,8%",
               up: true,

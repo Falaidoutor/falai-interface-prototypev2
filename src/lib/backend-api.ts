@@ -105,6 +105,38 @@ export type FinalizedTriageDetails = {
   finalRiskClassification?: string | null;
 };
 
+export type AnalyticsMetrics = {
+  generatedAt: string;
+  patientsToday: number;
+  patientsTodayDelta: number | null;
+  averageWaitMinutes: number | null;
+  averageWaitDelta: number | null;
+  aiAccuracy: number | null;
+  aiAccuracyDelta: number | null;
+  criticalCases: number;
+  criticalCasesDelta: number | null;
+  riskDistribution: Array<{ level: EsiLevel; count: number }>;
+  hourlyVolume: number[];
+  forecastDemand: number[];
+  staffingCapacity: number[];
+  agreement: { total: number | null; oneLevel: number | null; broad: number | null };
+};
+
+export type ModelConfig = {
+  id: string;
+  modelName: string;
+  provider: string;
+  systemPrompt: string;
+  temperature: number;
+  topP: number;
+  ragEnabled: boolean;
+  streamingEnabled: boolean;
+  versionLabel: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const cpfSchema = z.object({ cpf: z.string().min(1) });
 const patientTriageStatusSchema = z.enum([
   "PENDING",
@@ -218,6 +250,55 @@ const finalizedTriageDetailsSchema = z.object({
   finalRiskClassification: z.string().nullable().optional(),
 });
 
+const analyticsMetricsSchema: z.ZodType<AnalyticsMetrics> = z.object({
+  generatedAt: z.string(),
+  patientsToday: z.number(),
+  patientsTodayDelta: z.number().nullable(),
+  averageWaitMinutes: z.number().nullable(),
+  averageWaitDelta: z.number().nullable(),
+  aiAccuracy: z.number().nullable(),
+  aiAccuracyDelta: z.number().nullable(),
+  criticalCases: z.number(),
+  criticalCasesDelta: z.number().nullable(),
+  riskDistribution: z.array(z.object({ level: esiLevelSchema, count: z.number() })),
+  hourlyVolume: z.array(z.number()),
+  forecastDemand: z.array(z.number()),
+  staffingCapacity: z.array(z.number()),
+  agreement: z.object({
+    total: z.number().nullable(),
+    oneLevel: z.number().nullable(),
+    broad: z.number().nullable(),
+  }),
+});
+
+const modelConfigSchema = z.object({
+  id: z.string(),
+  modelName: z.string(),
+  provider: z.string(),
+  systemPrompt: z.string(),
+  temperature: z.number(),
+  topP: z.number(),
+  ragEnabled: z.boolean(),
+  streamingEnabled: z.boolean(),
+  versionLabel: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const updateModelConfigSchema = modelConfigSchema.pick({
+  modelName: true,
+  provider: true,
+  systemPrompt: true,
+  temperature: true,
+  topP: true,
+  ragEnabled: true,
+  streamingEnabled: true,
+}).extend({
+  versionLabel: z.string().optional(),
+  createdBy: z.string().optional(),
+});
+
 const backendDatabaseErrorPattern = /tenant\/user postgres\.[\w-]+ not found/i;
 
 export const authenticatePatient = createServerFn({ method: "GET" })
@@ -284,6 +365,24 @@ export const getFinalizedTriageDetails = createServerFn({ method: "GET" })
       data.source === "patient-triage" ? `/triages/patient/${data.id}` : `/triages/${data.id}`;
     const details = await fetchBackend(path, {}, finalizedTriageDetailsSchema);
     return normalizeFinalizedTriageDetails(details);
+  });
+
+export const getAnalyticsMetrics = createServerFn({ method: "GET" }).handler(async () => {
+  return fetchBackend("/analytics/metrics", {}, analyticsMetricsSchema);
+});
+
+export const getModelConfig = createServerFn({ method: "GET" }).handler(async () => {
+  return fetchBackend("/model-config", {}, modelConfigSchema);
+});
+
+export const createModelConfigVersion = createServerFn({ method: "POST" })
+  .inputValidator(updateModelConfigSchema)
+  .handler(async ({ data }) => {
+    return fetchBackend(
+      "/model-config/versions",
+      { method: "POST", body: JSON.stringify(data) },
+      modelConfigSchema,
+    );
   });
 
 async function fetchBackend<T>(

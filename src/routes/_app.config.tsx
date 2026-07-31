@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import {
   Activity,
   CheckCircle2,
@@ -10,9 +10,12 @@ import {
   RotateCcw,
   Save,
   Zap,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { createModelConfigVersion, getModelConfig, type ModelConfig } from "@/lib/backend-api";
 
 export const Route = createFileRoute("/_app/config")({
   head: () => ({
@@ -96,8 +99,57 @@ function ConfigPage() {
   const [streaming, setStreaming] = useState(true);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [applied, setApplied] = useState(false);
+  const [modelConfig, setModelConfig] = useState<ModelConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const tokenEstimate = useMemo(() => Math.ceil(prompt.length / 4), [prompt]);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const config = await getModelConfig();
+        setModelConfig(config);
+        setPrompt(config.systemPrompt);
+        setTemperature(config.temperature);
+        setTopP(config.topP);
+        setRagEnabled(config.ragEnabled);
+        setStreaming(config.streamingEnabled);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Não foi possível carregar a configuração do modelo.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const saveConfig = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const saved = await createModelConfigVersion({
+        data: {
+          modelName: modelConfig?.modelName ?? "llama-3.3-70b-versatile",
+          provider: modelConfig?.provider ?? "groq",
+          systemPrompt: prompt,
+          temperature,
+          topP,
+          ragEnabled,
+          streamingEnabled: streaming,
+          versionLabel: `config-${new Date().toISOString()}`,
+          createdBy: "admin",
+        },
+      });
+      setModelConfig(saved);
+      setApplied(true);
+      window.setTimeout(() => setApplied(false), 2200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível salvar a configuração.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 md:p-8">
@@ -119,6 +171,17 @@ function ConfigPage() {
           Cluster GPU saudável
         </div>
       </header>
+
+      {loading ? (
+        <div className="mb-6 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" /> Carregando configuração vigente...
+        </div>
+      ) : null}
+      {error ? (
+        <div className="mb-6 flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-700 dark:text-rose-300">
+          <AlertCircle className="h-4 w-4" /> {error}
+        </div>
+      ) : null}
 
       <div className="mb-6 inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground">
         <TabButton active={tab === "status"} onClick={() => setTab("status")} icon={Activity}>
@@ -160,7 +223,7 @@ function ConfigPage() {
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2">
               <span className="font-mono text-xs text-muted-foreground">system_prompt.md</span>
               <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
-                qwen3_32b
+                {modelConfig?.modelName ?? "llama-3.3-70b-versatile"}
               </span>
             </div>
             <textarea
@@ -191,17 +254,15 @@ function ConfigPage() {
                 <Button
                   size="sm"
                   className="gap-2"
-                  onClick={() => {
-                    setApplied(true);
-                    window.setTimeout(() => setApplied(false), 2200);
-                  }}
+                  onClick={() => void saveConfig()}
+                  disabled={saving || loading}
                 >
                   {applied ? (
                     <CheckCircle2 className="h-3.5 w-3.5" />
                   ) : (
                     <Save className="h-3.5 w-3.5" />
                   )}
-                  {applied ? "Aplicado" : "Aplicar"}
+                  {saving ? "Salvando..." : applied ? "Aplicado" : "Aplicar"}
                 </Button>
               </div>
             </div>
@@ -218,7 +279,10 @@ function ConfigPage() {
                   label="Temperature"
                   hint="0.1 determinismo · 1.0 criatividade"
                   value={temperature}
-                  onChange={setTemperature}
+                  onChange={(value) => {
+                    setTemperature(value);
+                    setApplied(false);
+                  }}
                   min={0.1}
                   max={1}
                   step={0.05}
@@ -227,7 +291,10 @@ function ConfigPage() {
                   label="Top-p"
                   hint="0.1 focado · 1.0 abrangente"
                   value={topP}
-                  onChange={setTopP}
+                  onChange={(value) => {
+                    setTopP(value);
+                    setApplied(false);
+                  }}
                   min={0.1}
                   max={1}
                   step={0.05}
@@ -242,13 +309,19 @@ function ConfigPage() {
                   label="RAG clínico"
                   desc="Recupera diretrizes e protocolos por similaridade."
                   checked={ragEnabled}
-                  onChange={setRagEnabled}
+                  onChange={(value) => {
+                    setRagEnabled(value);
+                    setApplied(false);
+                  }}
                 />
                 <CheckRow
                   label="Streaming de tokens"
                   desc="Resposta progressiva no painel clínico."
                   checked={streaming}
-                  onChange={setStreaming}
+                  onChange={(value) => {
+                    setStreaming(value);
+                    setApplied(false);
+                  }}
                 />
               </div>
             </div>
