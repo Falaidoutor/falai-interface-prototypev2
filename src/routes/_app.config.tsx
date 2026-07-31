@@ -81,6 +81,24 @@ const models: {
   },
 ];
 
+const MODEL_OPTIONS = [
+  {
+    value: "llama-3.3-70b-versatile",
+    label: "Llama 3.3 70B",
+    description: "Modelo principal para triagem clínica via Groq.",
+  },
+  {
+    value: "qwen/qwen3-32b",
+    label: "Qwen 3 32B",
+    description: "Alternativa de alta velocidade para triagem clínica.",
+  },
+  {
+    value: "openai/gpt-oss-120b",
+    label: "GPT OSS 120B",
+    description: "Modelo de maior capacidade disponível no provedor.",
+  },
+] as const;
+
 const DEFAULT_PROMPT = `Você é o FalAI Doutor, um assistente de triagem clínica.
 Sua tarefa é classificar pacientes segundo critérios ESI com base no relato do paciente.
 
@@ -100,6 +118,7 @@ function ConfigPage() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [applied, setApplied] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig | null>(null);
+  const [modelName, setModelName] = useState("llama-3.3-70b-versatile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +130,7 @@ function ConfigPage() {
       try {
         const config = await getModelConfig();
         setModelConfig(config);
+        setModelName(config.modelName);
         setPrompt(config.systemPrompt);
         setTemperature(config.temperature);
         setTopP(config.topP);
@@ -130,7 +150,7 @@ function ConfigPage() {
     try {
       const saved = await createModelConfigVersion({
         data: {
-          modelName: modelConfig?.modelName ?? "llama-3.3-70b-versatile",
+          modelName,
           provider: modelConfig?.provider ?? "groq",
           systemPrompt: prompt,
           temperature,
@@ -142,6 +162,7 @@ function ConfigPage() {
         },
       });
       setModelConfig(saved);
+      setModelName(saved.modelName);
       setApplied(true);
       window.setTimeout(() => setApplied(false), 2200);
     } catch (err) {
@@ -223,7 +244,7 @@ function ConfigPage() {
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2">
               <span className="font-mono text-xs text-muted-foreground">system_prompt.md</span>
               <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
-                {modelConfig?.modelName ?? "llama-3.3-70b-versatile"}
+                {modelName}
               </span>
             </div>
             <textarea
@@ -269,6 +290,40 @@ function ConfigPage() {
           </div>
 
           <div className="space-y-4">
+            <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-foreground">Modelo em uso</h2>
+              <p className="text-xs text-muted-foreground">
+                A próxima triagem usará o modelo selecionado após aplicar a nova versão.
+              </p>
+              <div className="mt-4">
+                <label className="block text-xs font-semibold text-foreground" htmlFor="model-name">
+                  Modelo
+                </label>
+                <select
+                  id="model-name"
+                  value={modelName}
+                  onChange={(event) => {
+                    setModelName(event.target.value);
+                    setApplied(false);
+                  }}
+                  className="mt-1.5 h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+                  disabled={saving || loading}
+                >
+                  {!MODEL_OPTIONS.some((option) => option.value === modelName) ? (
+                    <option value={modelName}>{modelName}</option>
+                  ) : null}
+                  {MODEL_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {MODEL_OPTIONS.find((option) => option.value === modelName)?.description ?? "Modelo configurado no backend."}
+                </p>
+              </div>
+            </div>
+
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-foreground">Parâmetros de inferência</h2>
               <p className="text-xs text-muted-foreground">
