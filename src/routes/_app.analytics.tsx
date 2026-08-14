@@ -79,6 +79,15 @@ const mockHourly = [
 // 16 points over the next 4 hours, every 15 minutes
 const mockForecastDemand = [18, 21, 24, 28, 31, 34, 36, 38, 39, 40, 38, 36, 33, 30, 27, 25];
 const mockStaffingCapacity = Array.from({ length: 16 }, () => 32);
+const mockAgreementByPeriod: Record<
+  AnalyticsMetrics["qualityPeriod"],
+  { total: number; oneLevel: number; broad: number }
+> = {
+  today: { total: 82.1, oneLevel: 13.5, broad: 4.4 },
+  yesterday: { total: 80.8, oneLevel: 14.7, broad: 4.5 },
+  last7d: { total: 84.6, oneLevel: 11.8, broad: 3.6 },
+  last30d: { total: 86.2, oneLevel: 10.4, broad: 3.4 },
+};
 const qualityPeriodLabels = {
   today: "Hoje (00h–agora)",
   yesterday: "Ontem (00h–24h)",
@@ -122,11 +131,19 @@ function toManchesterLevel(level: string): ManchesterLevel {
 }
 
 function AnalyticsPage() {
-  const [dataMode, setDataMode] = useState<"mock" | "real">("mock");
+  const [dataMode, setDataMode] = useState<"mock" | "real">(() => {
+    if (typeof window === "undefined") return "mock";
+    const savedMode = window.localStorage.getItem("falai.analytics.dataMode");
+    return savedMode === "real" ? "real" : "mock";
+  });
   const [realData, setRealData] = useState<AnalyticsMetrics | null>(null);
   const [qualityPeriod, setQualityPeriod] = useState<AnalyticsMetrics["qualityPeriod"]>("today");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.localStorage.setItem("falai.analytics.dataMode", dataMode);
+  }, [dataMode]);
 
   const loadRealData = async () => {
     setLoading(true);
@@ -167,17 +184,7 @@ function AnalyticsPage() {
   const staffingCapacity = usingRealData ? realData!.staffingCapacity : mockStaffingCapacity;
   const maxBar = Math.max(1, ...riskBars.map((r) => r.count));
 
-  const agreementCards = usingRealData
-    ? [
-        { l: "Concordância total", v: formatPercent(realData!.agreement.total), c: "bg-emerald-500", d: null, up: true },
-        { l: "Ajuste de 1 nível", v: formatPercent(realData!.agreement.oneLevel), c: "bg-amber-500", d: null, up: true },
-        { l: "Reclassificação ampla", v: formatPercent(realData!.agreement.broad), c: "bg-rose-500", d: null, up: true },
-      ]
-    : [
-        { l: "Concordância total", v: "82,1%", c: "bg-emerald-500", d: "+2,3%", up: true },
-        { l: "Ajuste de 1 nível", v: "13,5%", c: "bg-amber-500", d: "−1,1%", up: true },
-        { l: "Reclassificação ampla", v: "4,4%", c: "bg-rose-500", d: "−0,8%", up: true },
-      ];
+  const mockAgreement = mockAgreementByPeriod[qualityPeriod];
 
   return (
     <div className="p-6 md:p-8">
@@ -277,9 +284,6 @@ function AnalyticsPage() {
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-rose-500" /> Capacidade
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 font-semibold text-rose-600 dark:text-rose-400">
-              <TrendingUp className="h-3 w-3" /> Pico previsto às 16h45
-            </span>
           </div>
         </div>
         <ForecastChart demand={forecastDemand} capacity={staffingCapacity} />
@@ -296,25 +300,21 @@ function AnalyticsPage() {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Distribuição segundo Protocolo Manchester</p>
-          <div className="mt-6 flex h-56 items-end gap-3">
+          <div className="mt-6 space-y-3">
             {riskBars.map((r) => {
-              const h = (r.count / maxBar) * 100;
+              const width = (r.count / maxBar) * 100;
               const meta = MANCHESTER_META[r.level];
               return (
-                <div key={r.level} className="flex flex-1 flex-col items-center gap-2">
-                  <div className="text-xs font-semibold text-foreground">{r.count}</div>
-                  <div className="flex w-full flex-1 items-end">
+                <div key={r.level} className="grid grid-cols-[92px_1fr_32px] items-center gap-3">
+                  <div className="truncate text-[10px] font-medium text-muted-foreground">{meta.label}</div>
+                  <div className="h-3 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="w-full rounded-t-md transition-all duration-500"
-                      style={{
-                        height: `${h}%`,
-                        backgroundColor: meta.colorVar,
-                      }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${width}%`, backgroundColor: meta.colorVar }}
+                      aria-label={`${meta.label}: ${r.count} atendimentos`}
                     />
                   </div>
-                  <div className="text-center text-[10px] font-medium leading-tight text-muted-foreground">
-                    {meta.label}
-                  </div>
+                  <div className="text-right text-xs font-semibold text-foreground">{r.count}</div>
                 </div>
               );
             })}
@@ -342,23 +342,23 @@ function AnalyticsPage() {
           {[
             {
               l: "Concordância total",
-              v: usingRealData ? formatPercent(realData!.agreement.total) : "82,1%",
+              v: usingRealData ? formatPercent(realData!.agreement.total) : formatPercent(mockAgreement.total),
               c: "bg-emerald-500",
-              d: "+2,3%",
+              d: usingRealData ? null : "—",
               up: true,
             },
             {
               l: "Ajuste de 1 nível",
-              v: usingRealData ? formatPercent(realData!.agreement.oneLevel) : "13,5%",
+              v: usingRealData ? formatPercent(realData!.agreement.oneLevel) : formatPercent(mockAgreement.oneLevel),
               c: "bg-amber-500",
-              d: "−1,1%",
+              d: usingRealData ? null : "—",
               up: true,
             },
             {
               l: "Reclassificação ampla",
-              v: usingRealData ? formatPercent(realData!.agreement.broad) : "4,4%",
+              v: usingRealData ? formatPercent(realData!.agreement.broad) : formatPercent(mockAgreement.broad),
               c: "bg-rose-500",
-              d: "−0,8%",
+              d: usingRealData ? null : "—",
               up: true,
             },
           ].map((s) => (
@@ -371,8 +371,7 @@ function AnalyticsPage() {
                 <span
                   className={`inline-flex items-center gap-0.5 text-[11px] font-semibold ${s.up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
                 >
-                  {s.up ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-                  {s.d}
+                  {s.d ?? "—"}
                 </span>
               </div>
               <div className="mt-2 text-xl font-bold text-foreground">{s.v}</div>
