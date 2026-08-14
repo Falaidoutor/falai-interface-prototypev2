@@ -64,13 +64,39 @@ const mockMetrics = [
   },
 ];
 
-const mockRiskBars: { level: ManchesterLevel; count: number }[] = [
-  { level: "emergency", count: 6 },
-  { level: "very-urgent", count: 22 },
-  { level: "urgent", count: 78 },
-  { level: "standard", count: 96 },
-  { level: "non-urgent", count: 46 },
-];
+const mockRiskBarsByPeriod: Record<
+  AnalyticsMetrics["qualityPeriod"],
+  { level: ManchesterLevel; count: number }[]
+> = {
+  today: [
+    { level: "emergency", count: 6 },
+    { level: "very-urgent", count: 22 },
+    { level: "urgent", count: 78 },
+    { level: "standard", count: 96 },
+    { level: "non-urgent", count: 46 },
+  ],
+  yesterday: [
+    { level: "emergency", count: 4 },
+    { level: "very-urgent", count: 18 },
+    { level: "urgent", count: 71 },
+    { level: "standard", count: 88 },
+    { level: "non-urgent", count: 39 },
+  ],
+  last7d: [
+    { level: "emergency", count: 35 },
+    { level: "very-urgent", count: 142 },
+    { level: "urgent", count: 506 },
+    { level: "standard", count: 628 },
+    { level: "non-urgent", count: 294 },
+  ],
+  last30d: [
+    { level: "emergency", count: 138 },
+    { level: "very-urgent", count: 574 },
+    { level: "urgent", count: 2_048 },
+    { level: "standard", count: 2_516 },
+    { level: "non-urgent", count: 1_182 },
+  ],
+};
 
 const mockHourly = [
   4, 6, 5, 4, 3, 5, 8, 14, 22, 28, 31, 34, 30, 26, 22, 24, 27, 32, 29, 21, 16, 12, 9, 7,
@@ -178,7 +204,7 @@ function AnalyticsPage() {
   }, [realData, usingRealData, qualityPeriodLabel]);
   const riskBars = usingRealData
     ? realData!.riskDistribution.map(({ level, count }) => ({ level: toManchesterLevel(level), count }))
-    : mockRiskBars;
+    : mockRiskBarsByPeriod[qualityPeriod];
   const hourly = usingRealData ? realData!.hourlyVolume : mockHourly;
   const forecastDemand = usingRealData ? realData!.forecastDemand : mockForecastDemand;
   const staffingCapacity = usingRealData ? realData!.staffingCapacity : mockStaffingCapacity;
@@ -296,7 +322,7 @@ function AnalyticsPage() {
               Atendimentos por nível de risco
             </h2>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Hoje (00h → agora)
+              {qualityPeriodLabel}
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Distribuição segundo Protocolo Manchester</p>
