@@ -1,4 +1,10 @@
-# FalAI Triage
+# FalAI Triage — interface web do Falaidoutor
+
+Este repositório contém o frontend web do **Falaidoutor**, uma plataforma de apoio à triagem clínica. Ele apresenta os fluxos de entrada do paciente, acompanhamento da fila, análise das triagens, revisão por profissional e painéis operacionais. O frontend consome a API do backend e não substitui a avaliação de um profissional de saúde.
+
+## Papel deste componente
+
+É a camada de interface e experiência do usuário do sistema: organiza as telas, sessões, navegação, componentes visuais e chamadas para a API. Regras de negócio, persistência e processamento de IA pertencem aos componentes backend e modelo.
 
 Frontend:
 
