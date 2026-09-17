@@ -44,7 +44,7 @@ const models: {
   throughput: string;
 }[] = [
   {
-    name: "qwen3_32b",
+    name: "gpt-oss-120b",
     status: "active",
     role: "Triagem clínica primária",
     latency: 42,
@@ -53,13 +53,22 @@ const models: {
     throughput: "84 tok/s",
   },
   {
-    name: "llama3.3_70b",
+    name: "gpt-oss-20b",
     status: "standby",
-    role: "Fallback / segunda opinião",
+    role: "Fallback automático por rate limit",
     latency: 96,
     memory: 41,
     context: "128k tokens",
     throughput: "47 tok/s",
+  },
+  {
+    name: "qwen3.8_27b",
+    status: "standby",
+    role: "Fallback secundário",
+    latency: 0,
+    memory: 0,
+    context: "131k tokens",
+    throughput: "-",
   },
   {
     name: "medlama_8b_pt",
@@ -83,19 +92,19 @@ const models: {
 
 const MODEL_OPTIONS = [
   {
-    value: "llama-3.3-70b-versatile",
-    label: "Llama 3.3 70B",
-    description: "Modelo principal para triagem clínica via Groq.",
-  },
-  {
-    value: "qwen/qwen3-32b",
-    label: "Qwen 3 32B",
-    description: "Alternativa de alta velocidade para triagem clínica.",
-  },
-  {
     value: "openai/gpt-oss-120b",
     label: "GPT OSS 120B",
-    description: "Modelo de maior capacidade disponível no provedor.",
+    description: "1º modelo: maior capacidade para triagem clínica.",
+  },
+  {
+    value: "openai/gpt-oss-20b",
+    label: "GPT OSS 20B",
+    description: "2º modelo: fallback rápido quando houver rate limit.",
+  },
+  {
+    value: "qwen/qwen3.8-27b",
+    label: "Qwen 3.8 27B",
+    description: "3º modelo: alternativa adicional de fallback.",
   },
 ] as const;
 
@@ -118,7 +127,7 @@ function ConfigPage() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [applied, setApplied] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig | null>(null);
-  const [modelName, setModelName] = useState("llama-3.3-70b-versatile");
+  const [modelName, setModelName] = useState("openai/gpt-oss-120b");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -243,7 +252,7 @@ function ConfigPage() {
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2">
               <span className="font-mono text-xs text-muted-foreground">system_prompt.md</span>
               <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
-                {modelName}
+                {MODEL_OPTIONS.find((option) => option.value === modelName)?.label ?? modelName}
               </span>
             </div>
             <textarea
@@ -320,6 +329,7 @@ function ConfigPage() {
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   {MODEL_OPTIONS.find((option) => option.value === modelName)?.description ?? "Modelo configurado no backend."}
                 </p>
+                <ModelOrder activeModel={modelName} />
               </div>
             </div>
 
@@ -382,6 +392,40 @@ function ConfigPage() {
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+function ModelOrder({ activeModel }: { activeModel: string }) {
+  return (
+    <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] font-semibold text-foreground">Ordem de atendimento</span>
+        <span className="text-[10px] text-muted-foreground">fallback automático</span>
+      </div>
+      <div className="mt-2 space-y-2">
+        {MODEL_OPTIONS.map((option, index) => {
+          const isActive = option.value === activeModel;
+          return (
+            <div key={option.value} className="flex items-center gap-2 text-xs">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background font-mono text-[10px] font-bold text-muted-foreground">
+                {index + 1}
+              </span>
+              <span className={cn("flex-1", isActive ? "font-semibold text-foreground" : "text-muted-foreground")}>
+                {option.label}
+              </span>
+              {isActive ? (
+                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                  ativo agora
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+        Se o modelo ativo atingir o limite de uso, o próximo modelo assume a mesma triagem após novas tentativas com backoff.
+      </p>
     </div>
   );
 }
