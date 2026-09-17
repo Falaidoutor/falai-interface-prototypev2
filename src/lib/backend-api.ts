@@ -129,6 +129,7 @@ export type AnalyticsMetrics = {
 export type ModelConfig = {
   id: string;
   modelName: string;
+  modelOrder: string[];
   provider: string;
   systemPrompt: string;
   temperature: number;
@@ -286,6 +287,7 @@ const analyticsMetricsInputSchema = z.object({
 const modelConfigSchema = z.object({
   id: z.string(),
   modelName: z.string(),
+  modelOrder: z.array(z.string()).default([]),
   provider: z.string(),
   systemPrompt: z.string(),
   temperature: z.number(),
@@ -300,6 +302,7 @@ const modelConfigSchema = z.object({
 
 const updateModelConfigSchema = modelConfigSchema.pick({
   modelName: true,
+  modelOrder: true,
   provider: true,
   systemPrompt: true,
   temperature: true,
@@ -410,6 +413,8 @@ async function fetchBackend<T>(
   init: RequestInit = {},
   responseSchema: z.ZodType<T>,
 ): Promise<T> {
+  const startedAt = performance.now();
+  const method = init.method ?? "GET";
   const baseUrl = (
     process.env.FALAI_BACKEND_URL ?? "https://backendfalaidoutor.vercel.app/api"
   ).replace(/\/$/, "");
@@ -423,6 +428,7 @@ async function fetchBackend<T>(
   }
 
   let response: Response;
+  console.debug("backend.request.start", { method, path });
   try {
     response = await fetch(`${baseUrl}${path}`, {
       ...init,
@@ -434,6 +440,12 @@ async function fetchBackend<T>(
     });
   } catch (error) {
     const reason = error instanceof Error ? error.message : "erro de rede desconhecido";
+    console.error("backend.request.network_error", {
+      method,
+      path,
+      elapsedMs: Math.round(performance.now() - startedAt),
+      reason,
+    });
     throw new Error(
       `Nao foi possivel conectar ao backend. Verifique se a API esta online e tente novamente. Detalhe: ${reason}`,
     );
@@ -441,7 +453,12 @@ async function fetchBackend<T>(
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    console.error(`Backend respondeu HTTP ${response.status} em ${baseUrl}${path}`, text);
+    console.warn("backend.request.http_error", {
+      method,
+      path,
+      status: response.status,
+      elapsedMs: Math.round(performance.now() - startedAt),
+    });
     const authHint =
       response.status === 401
         ? " Verifique se FALAI_BACKEND_APPLICATION_KEY está configurada com a mesma APPLICATION_KEY do backend."
@@ -459,6 +476,13 @@ async function fetchBackend<T>(
   const parsed = responseSchema.safeParse(payload);
 
   if (!parsed.success) {
+    console.error("backend.request.invalid_response", {
+      method,
+      path,
+      status: response.status,
+      elapsedMs: Math.round(performance.now() - startedAt),
+      issueCount: parsed.error.issues.length,
+    });
     throw new Error(
       `Backend respondeu em formato inesperado em ${baseUrl}${path}. Detalhe: ${parsed.error.issues
         .map((issue) => `${issue.path.join(".") || "raiz"}: ${issue.message}`)
@@ -466,6 +490,12 @@ async function fetchBackend<T>(
     );
   }
 
+  console.debug("backend.request.success", {
+    method,
+    path,
+    status: response.status,
+    elapsedMs: Math.round(performance.now() - startedAt),
+  });
   return parsed.data;
 }
 

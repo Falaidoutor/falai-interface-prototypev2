@@ -64,7 +64,7 @@ function TriageDetailsPage() {
   }, [params.id, params.source]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-6 md:p-8">
+    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 md:p-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="outline" className="gap-2">
           <Link to={backRoute}>

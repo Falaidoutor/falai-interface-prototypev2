@@ -111,7 +111,7 @@ function MyTriagesPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl p-6 md:p-8">
+    <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 md:p-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -263,7 +263,7 @@ function TriageRow({ triage }: { triage: PatientTriage }) {
   return (
     <article
       className={`rounded-xl border border-l-4 p-5 shadow-sm transition-colors ${
-        isAnalyzed ? riskTone.card : "border-l-border bg-card"
+        isAnalyzed ? riskTone.card : "border-l-border bg-card dark:border-l-slate-700/80 dark:bg-slate-800/45"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -317,10 +317,10 @@ function TriageRow({ triage }: { triage: PatientTriage }) {
 
 function StatusBadge({ status }: { status: PatientTriageStatus }) {
   const tone: Record<PatientTriageStatus, string> = {
-    PENDING: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    AI_PROCESSING: "bg-primary/10 text-primary",
-    WAITING_PROFESSIONAL_REVIEW: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    COMPLETED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    PENDING: "bg-amber-500/10 text-amber-700 dark:bg-amber-950/35 dark:text-amber-300",
+    AI_PROCESSING: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-300",
+    WAITING_PROFESSIONAL_REVIEW: "bg-blue-500/10 text-blue-700 dark:bg-blue-950/35 dark:text-blue-300",
+    COMPLETED: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300",
   };
   const icon =
     status === "COMPLETED" ? (
@@ -343,36 +343,36 @@ function getRiskTone(riskClassification: string | null) {
   const risk = riskClassification?.trim().toUpperCase();
   const tones: Record<string, { card: string; badge: string; dot: string }> = {
     "ESI-1": {
-      card: "border-l-red-900 bg-red-950/5 dark:bg-red-950/20",
-      badge: "bg-red-900/10 text-red-800 dark:text-red-300",
-      dot: "bg-red-900",
+      card: "border-l-red-900 bg-red-950/5 dark:border-l-red-700/80 dark:bg-red-950/25",
+      badge: "bg-red-900/10 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+      dot: "bg-red-700",
     },
     "ESI-2": {
-      card: "border-l-red-600 bg-red-500/5 dark:bg-red-950/20",
-      badge: "bg-red-500/10 text-red-700 dark:text-red-300",
+      card: "border-l-red-600 bg-red-500/5 dark:border-l-red-600/80 dark:bg-red-950/20",
+      badge: "bg-red-500/10 text-red-700 dark:bg-red-900/25 dark:text-red-300",
       dot: "bg-red-600",
     },
     "ESI-3": {
-      card: "border-l-yellow-400 bg-yellow-400/10 dark:bg-yellow-950/20",
-      badge: "bg-yellow-400/15 text-yellow-800 dark:text-yellow-300",
+      card: "border-l-yellow-400 bg-yellow-400/10 dark:border-l-yellow-500/80 dark:bg-yellow-950/20",
+      badge: "bg-yellow-400/15 text-yellow-800 dark:bg-yellow-900/25 dark:text-yellow-300",
       dot: "bg-yellow-400",
     },
     "ESI-4": {
-      card: "border-l-emerald-500 bg-emerald-500/5 dark:bg-emerald-950/20",
-      badge: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+      card: "border-l-emerald-500 bg-emerald-500/5 dark:border-l-emerald-500/80 dark:bg-emerald-950/20",
+      badge: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-900/25 dark:text-emerald-300",
       dot: "bg-emerald-500",
     },
     "ESI-5": {
-      card: "border-l-cyan-400 bg-cyan-400/5 dark:bg-cyan-950/20",
-      badge: "bg-cyan-400/10 text-cyan-700 dark:text-cyan-300",
+      card: "border-l-cyan-400 bg-cyan-400/5 dark:border-l-cyan-400/80 dark:bg-cyan-950/20",
+      badge: "bg-cyan-400/10 text-cyan-700 dark:bg-cyan-900/25 dark:text-cyan-300",
       dot: "bg-cyan-400",
     },
   };
 
   return (
     tones[risk ?? ""] ?? {
-      card: "border-l-slate-500 bg-card",
-      badge: "bg-muted text-foreground",
+      card: "border-l-slate-500 bg-card dark:border-l-slate-500/80 dark:bg-slate-800/45",
+      badge: "bg-muted text-foreground dark:bg-slate-700/60 dark:text-slate-200",
       dot: "bg-slate-500",
     }
   );

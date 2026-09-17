@@ -12,6 +12,8 @@ import {
   Zap,
   AlertCircle,
   Loader2,
+  ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/_app/config")({
       {
         name: "description",
         content:
-          "Console administrativo de modelos LLM, parâmetros de inferência e ajuste de prompt do sistema de triagem.",
+          "Configure como a IA atende e quais instruções usa na triagem.",
       },
     ],
   }),
@@ -128,6 +130,7 @@ function ConfigPage() {
   const [applied, setApplied] = useState(false);
   const [modelConfig, setModelConfig] = useState<ModelConfig | null>(null);
   const [modelName, setModelName] = useState("openai/gpt-oss-120b");
+  const [modelOrder, setModelOrder] = useState<string[]>(MODEL_OPTIONS.map((option) => option.value));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -138,8 +141,10 @@ function ConfigPage() {
     void (async () => {
       try {
         const config = await getModelConfig();
-        setModelConfig(config);
+        const loadedOrder = config.modelOrder ?? [];
+        setModelConfig({ ...config, modelOrder: loadedOrder });
         setModelName(config.modelName);
+        setModelOrder(loadedOrder.length ? loadedOrder : [config.modelName, ...MODEL_OPTIONS.map((option) => option.value).filter((value) => value !== config.modelName)]);
         setPrompt(config.systemPrompt);
         setTemperature(config.temperature);
         setTopP(config.topP);
@@ -154,12 +159,17 @@ function ConfigPage() {
   }, []);
 
   const saveConfig = async () => {
+    console.info("model_config.save_start", {
+      model: modelOrder[0] ?? modelName,
+      order: modelOrder,
+    });
     setSaving(true);
     setError(null);
     try {
       const saved = await createModelConfigVersion({
         data: {
           modelName,
+          modelOrder,
           provider: modelConfig?.provider ?? "groq",
           systemPrompt: prompt,
           temperature,
@@ -170,11 +180,16 @@ function ConfigPage() {
           createdBy: "admin",
         },
       });
-      setModelConfig(saved);
+      setModelConfig({ ...saved, modelOrder: saved.modelOrder ?? modelOrder });
       setModelName(saved.modelName);
       setApplied(true);
+      console.info("model_config.save_success", {
+        model: saved.modelName,
+        order: saved.modelOrder ?? modelOrder,
+      });
       window.setTimeout(() => setApplied(false), 2200);
     } catch (err) {
+      console.error("model_config.save_error", err);
       setError(err instanceof Error ? err.message : "Não foi possível salvar a configuração.");
     } finally {
       setSaving(false);
@@ -182,7 +197,7 @@ function ConfigPage() {
   };
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -190,7 +205,7 @@ function ConfigPage() {
             Configurações do Modelo
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Console administrativo de LLMs, parâmetros de inferência e comportamento de triagem.
+            Configure as instruções, a ordem dos modelos e o comportamento da triagem.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
@@ -217,7 +232,7 @@ function ConfigPage() {
       <div className="mb-6 inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-2 rounded-md bg-background px-3 py-1.5 font-medium text-foreground shadow-sm">
           <FileCode2 className="h-4 w-4" />
-          Ajuste de Prompt / RAG
+          Instruções e protocolos
         </span>
       </div>
 
@@ -250,7 +265,7 @@ function ConfigPage() {
         <section className="grid gap-6 lg:grid-cols-3">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2">
-              <span className="font-mono text-xs text-muted-foreground">system_prompt.md</span>
+              <span className="font-mono text-xs text-muted-foreground">instruções-da-ia.txt</span>
               <span className="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
                 {MODEL_OPTIONS.find((option) => option.value === modelName)?.label ?? modelName}
               </span>
@@ -299,7 +314,7 @@ function ConfigPage() {
 
           <div className="space-y-4">
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-foreground">Modelo em uso</h2>
+              <h2 className="text-sm font-semibold text-foreground">Como a IA vai atender</h2>
               <p className="text-xs text-muted-foreground">
                 A próxima triagem usará o modelo selecionado após aplicar a nova versão.
               </p>
@@ -311,7 +326,9 @@ function ConfigPage() {
                   id="model-name"
                   value={modelName}
                   onChange={(event) => {
-                    setModelName(event.target.value);
+                    const selected = event.target.value;
+                    setModelName(selected);
+                    setModelOrder((current) => [selected, ...current.filter((value) => value !== selected)]);
                     setApplied(false);
                   }}
                   className="mt-1.5 h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
@@ -329,19 +346,26 @@ function ConfigPage() {
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   {MODEL_OPTIONS.find((option) => option.value === modelName)?.description ?? "Modelo configurado no backend."}
                 </p>
-                <ModelOrder activeModel={modelName} />
+                <ModelOrder
+                  order={modelOrder}
+                  onChange={(nextOrder) => {
+                    setModelOrder(nextOrder);
+                    setModelName(nextOrder[0]);
+                    setApplied(false);
+                  }}
+                />
               </div>
             </div>
 
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-foreground">Parâmetros de inferência</h2>
+              <h2 className="text-sm font-semibold text-foreground">Comportamento da resposta</h2>
               <p className="text-xs text-muted-foreground">
                 Ajuste o equilíbrio entre determinismo clínico e abrangência.
               </p>
               <div className="mt-5 space-y-5">
                 <RangeField
-                  label="Temperature"
-                  hint="0.1 determinismo · 1.0 criatividade"
+                  label="Criatividade"
+                  hint="Mais baixo: direto e consistente · mais alto: mais variado"
                   value={temperature}
                   onChange={(value) => {
                     setTemperature(value);
@@ -352,8 +376,8 @@ function ConfigPage() {
                   step={0.05}
                 />
                 <RangeField
-                  label="Top-p"
-                  hint="0.1 focado · 1.0 abrangente"
+                  label="Diversidade"
+                  hint="Mais baixo: focado · mais alto: abrangente"
                   value={topP}
                   onChange={(value) => {
                     setTopP(value);
@@ -367,11 +391,11 @@ function ConfigPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-foreground">RAG & Runtime</h2>
+              <h2 className="text-sm font-semibold text-foreground">Protocolos e resposta</h2>
               <div className="mt-4 space-y-4">
                 <CheckRow
-                  label="RAG clínico"
-                  desc="Recupera diretrizes e protocolos por similaridade."
+                  label="Consultar protocolos clínicos"
+                  desc="Busca diretrizes e protocolos relacionados ao relato."
                   checked={ragEnabled}
                   onChange={(value) => {
                     setRagEnabled(value);
@@ -379,8 +403,8 @@ function ConfigPage() {
                   }}
                 />
                 <CheckRow
-                  label="Streaming de tokens"
-                  desc="Resposta progressiva no painel clínico."
+                  label="Mostrar resposta progressivamente"
+                  desc="Exibe a resposta conforme ela é preparada."
                   checked={streaming}
                   onChange={(value) => {
                     setStreaming(value);
@@ -396,16 +420,32 @@ function ConfigPage() {
   );
 }
 
-function ModelOrder({ activeModel }: { activeModel: string }) {
+function ModelOrder({
+  order,
+  onChange,
+}: {
+  order: string[];
+  onChange: (order: string[]) => void;
+}) {
+  const move = (index: number, direction: -1 | 1) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= order.length) return;
+    const next = [...order];
+    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+    onChange(next);
+  };
+
   return (
     <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-semibold text-foreground">Ordem de atendimento</span>
-        <span className="text-[10px] text-muted-foreground">fallback automático</span>
+        <span className="text-[11px] font-semibold text-foreground">Ordem de tentativa</span>
+        <span className="text-[10px] text-muted-foreground">use ↑ ↓ para reorganizar</span>
       </div>
       <div className="mt-2 space-y-2">
-        {MODEL_OPTIONS.map((option, index) => {
-          const isActive = option.value === activeModel;
+        {order.map((model, index) => {
+          const option = MODEL_OPTIONS.find((item) => item.value === model);
+          if (!option) return null;
+          const isActive = index === 0;
           return (
             <div key={option.value} className="flex items-center gap-2 text-xs">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background font-mono text-[10px] font-bold text-muted-foreground">
@@ -414,17 +454,19 @@ function ModelOrder({ activeModel }: { activeModel: string }) {
               <span className={cn("flex-1", isActive ? "font-semibold text-foreground" : "text-muted-foreground")}>
                 {option.label}
               </span>
-              {isActive ? (
-                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                  ativo agora
-                </span>
-              ) : null}
+              <button type="button" aria-label={`Mover ${option.label} para cima`} disabled={index === 0} onClick={() => move(index, -1)} className="rounded p-1 text-muted-foreground hover:bg-background disabled:opacity-30">
+                <ArrowUp className="h-3 w-3" />
+              </button>
+              <button type="button" aria-label={`Mover ${option.label} para baixo`} disabled={index === order.length - 1} onClick={() => move(index, 1)} className="rounded p-1 text-muted-foreground hover:bg-background disabled:opacity-30">
+                <ArrowDown className="h-3 w-3" />
+              </button>
+              {isActive ? <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">primeiro</span> : null}
             </div>
           );
         })}
       </div>
       <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
-        Se o modelo ativo atingir o limite de uso, o próximo modelo assume a mesma triagem após novas tentativas com backoff.
+        A IA tenta o primeiro modelo. Se ele estiver temporariamente indisponível, segue a ordem definida automaticamente.
       </p>
     </div>
   );

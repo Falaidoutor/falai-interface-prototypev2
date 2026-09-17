@@ -233,7 +233,7 @@ function PainelPage() {
   }).length;
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -257,12 +257,12 @@ function PainelPage() {
             placeholder="Buscar nome, senha ou risco..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-9 w-72 pl-9"
+            className="h-9 w-full pl-9 sm:w-72"
           />
         </div>
       </header>
 
-      <div className="mb-4 inline-flex rounded-lg bg-muted p-1 text-sm text-muted-foreground">
+      <div className="mb-4 flex w-fit max-w-full flex-wrap rounded-lg bg-muted p-1 text-sm text-muted-foreground">
         <TabButton active={activeTab === "pending"} onClick={() => setActiveTab("pending")}>
           Pendentes de análise
           <span className="ml-2 rounded bg-background px-1.5 py-0.5 text-[11px] text-foreground">
@@ -318,7 +318,7 @@ function PendingTable({
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
+          <TableRow className="bg-muted/40 hover:bg-muted/40 dark:bg-slate-800/45 dark:hover:bg-slate-800/55">
             <TableHead className="w-[100px]">Fila</TableHead>
             <TableHead>Paciente</TableHead>
             <TableHead className="w-[140px]">Tempo de Espera</TableHead>
@@ -329,7 +329,7 @@ function PendingTable({
         </TableHeader>
         <TableBody>
           {rows.map((triage) => (
-            <TableRow key={triage.id} className="transition-colors duration-200 hover:bg-accent/40">
+            <TableRow key={triage.id} className="bg-slate-900/10 transition-colors duration-200 hover:bg-accent/40 dark:bg-slate-900/25 dark:hover:bg-slate-800/55">
               <TableCell className="font-mono text-sm font-semibold text-foreground">
                 {triage.queueTicket ?? `#${triage.id}`}
               </TableCell>
@@ -348,7 +348,7 @@ function PendingTable({
                 <RiskBadge value={triage.aiSuggestedRiskClassification} />
               </TableCell>
               <TableCell>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950/35 dark:text-amber-300">
                   Aguardando revisão
                 </span>
               </TableCell>
@@ -379,7 +379,7 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
+          <TableRow className="bg-muted/40 hover:bg-muted/40 dark:bg-slate-800/45 dark:hover:bg-slate-800/55">
             <TableHead className="w-[100px]">Fila</TableHead>
             <TableHead>Paciente</TableHead>
             <TableHead className="w-[220px]">Risco Confirmado</TableHead>
@@ -391,7 +391,7 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
           {rows.map((item) => (
             <TableRow
               key={`${item.source ?? "queue"}-${item.triageId ?? item.queueId}`}
-              className="transition-colors duration-200 hover:bg-accent/40"
+              className="bg-slate-900/10 transition-colors duration-200 hover:bg-accent/40 dark:bg-slate-900/25 dark:hover:bg-slate-800/55"
             >
               <TableCell className="font-mono text-sm font-semibold text-foreground">
                 {item.queueTicket}
@@ -479,11 +479,11 @@ function RiskBadge({
 }) {
   const level = toEsiLevel(value);
   const tone: Record<EsiLevel, string> = {
-    "ESI-1": "bg-rose-500/10 text-rose-700 dark:text-rose-400",
-    "ESI-2": "bg-orange-500/10 text-orange-700 dark:text-orange-400",
-    "ESI-3": "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-    "ESI-4": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    "ESI-5": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+    "ESI-1": "bg-rose-500/10 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300",
+    "ESI-2": "bg-orange-500/10 text-orange-700 dark:bg-orange-950/25 dark:text-orange-300",
+    "ESI-3": "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-950/25 dark:text-yellow-300",
+    "ESI-4": "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-300",
+    "ESI-5": "bg-blue-500/10 text-blue-700 dark:bg-blue-950/25 dark:text-blue-300",
   };
   const descriptions: Record<EsiLevel, string> = {
     "ESI-1": "Ressuscitação",

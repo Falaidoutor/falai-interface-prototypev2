@@ -374,7 +374,7 @@ function InitialTriagePage() {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center p-6">
+      <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-3xl">
           <div className="mb-6 text-center">
             <h1
