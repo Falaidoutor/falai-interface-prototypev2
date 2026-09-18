@@ -43,7 +43,10 @@ function AppLayout() {
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
           <AppHeader />
           <main className="flex-1">
-            <div key={`${location.pathname}${location.search}`} className="page-transition">
+            <div
+              key={`${location.pathname}${JSON.stringify(location.search)}`}
+              className="page-transition"
+            >
               <Outlet />
             </div>
           </main>
