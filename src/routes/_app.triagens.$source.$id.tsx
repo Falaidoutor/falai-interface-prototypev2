@@ -90,6 +90,8 @@ function TriageDetailsPage() {
 }
 
 function DetailsContent({ details }: { details: FinalizedTriageDetails }) {
+  const isPatientView = details.source === "patient-triage";
+
   return (
     <div className="space-y-6">
       <header className="rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -123,17 +125,19 @@ function DetailsContent({ details }: { details: FinalizedTriageDetails }) {
         </p>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Análise clínica</h2>
-        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-          {details.professionalNotes ||
-            details.justificativa ||
-            details.aiSummary ||
-            "Sem análise registrada."}
-        </p>
-      </section>
+      {!isPatientView && (
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground">Análise clínica</h2>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+            {details.professionalNotes ||
+              details.justificativa ||
+              details.aiSummary ||
+              "Sem análise registrada."}
+          </p>
+        </section>
+      )}
 
-      {details.professionalNotes && details.aiSummary && (
+      {!isPatientView && details.professionalNotes && details.aiSummary && (
         <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Resumo original da IA</h2>
           <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
