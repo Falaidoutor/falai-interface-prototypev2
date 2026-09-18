@@ -36,6 +36,7 @@ export type PatientTriage = {
   patientStatus: "PENDENTE" | "ANALISADA";
   riskClassification: string | null;
   displayColor: string;
+  aiError?: string | null;
 };
 
 export type EsiLevel = "ESI-1" | "ESI-2" | "ESI-3" | "ESI-4" | "ESI-5";
@@ -189,6 +190,7 @@ const patientTriageResponseSchema = z.object({
   patientStatus: z.enum(["PENDENTE", "ANALISADA"]),
   riskClassification: z.string().nullable(),
   displayColor: z.string(),
+  aiError: z.string().nullable().default(null),
 });
 
 const patientTriageListResponseSchema = z.union([

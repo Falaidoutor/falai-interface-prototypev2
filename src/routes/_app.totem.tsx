@@ -263,7 +263,11 @@ function TriageRow({ triage }: { triage: PatientTriage }) {
   return (
     <article
       className={`rounded-xl border border-l-4 p-5 shadow-sm transition-colors ${
-        isAnalyzed ? riskTone.card : "border-l-border bg-card dark:border-l-slate-700/80 dark:bg-slate-800/45"
+        isAnalyzed
+          ? riskTone.card
+          : triage.aiError
+            ? "border-l-rose-500 bg-rose-500/5 dark:border-l-rose-400/80 dark:bg-rose-950/20"
+            : "border-l-border bg-card dark:border-l-slate-700/80 dark:bg-slate-800/45"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -272,7 +276,7 @@ function TriageRow({ triage }: { triage: PatientTriage }) {
             <span className="font-mono text-sm font-semibold text-primary">
               {triage.queueTicket}
             </span>
-            <StatusBadge status={triage.status} />
+            <StatusBadge status={triage.status} aiError={triage.aiError} />
             {isAnalyzed && triage.riskClassification && (
               <span
                 className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold ${riskTone.badge}`}
@@ -315,15 +319,18 @@ function TriageRow({ triage }: { triage: PatientTriage }) {
   );
 }
 
-function StatusBadge({ status }: { status: PatientTriageStatus }) {
+function StatusBadge({ status, aiError }: { status: PatientTriageStatus; aiError?: string | null }) {
   const tone: Record<PatientTriageStatus, string> = {
     PENDING: "bg-amber-500/10 text-amber-700 dark:bg-amber-950/35 dark:text-amber-300",
     AI_PROCESSING: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-300",
     WAITING_PROFESSIONAL_REVIEW: "bg-blue-500/10 text-blue-700 dark:bg-blue-950/35 dark:text-blue-300",
     COMPLETED: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300",
   };
+  const hasError = Boolean(aiError);
   const icon =
-    status === "COMPLETED" ? (
+    hasError ? (
+      <AlertCircle className="h-3.5 w-3.5" />
+    ) : status === "COMPLETED" ? (
       <CheckCircle2 className="h-3.5 w-3.5" />
     ) : status === "AI_PROCESSING" ? (
       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -331,10 +338,12 @@ function StatusBadge({ status }: { status: PatientTriageStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${tone[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${
+        hasError ? "bg-rose-500/10 text-rose-700 dark:bg-rose-950/35 dark:text-rose-300" : tone[status]
+      }`}
     >
       {icon}
-      {getStatusLabel(status)}
+      {getStatusLabel(status, aiError)}
     </span>
   );
 }

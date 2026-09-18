@@ -22,7 +22,9 @@ export function storeCpf(cpf: string) {
   window.localStorage.setItem("falai.currentCpf", normalizeCpf(cpf));
 }
 
-export function getStatusLabel(status: PatientTriageStatus) {
+export function getStatusLabel(status: PatientTriageStatus, aiError?: string | null) {
+  if (aiError) return "Erro no processamento";
+
   const labels: Record<PatientTriageStatus, string> = {
     PENDING: "Recebida",
     AI_PROCESSING: "IA processando",
