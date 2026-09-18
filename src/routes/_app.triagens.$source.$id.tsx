@@ -9,6 +9,8 @@ import {
 } from "@/lib/backend-api";
 
 export const Route = createFileRoute("/_app/triagens/$source/$id")({
+  validateSearch: (search: Record<string, unknown>) =>
+    search.from === "panel" ? { from: "panel" as const } : {},
   head: () => ({
     meta: [
       { title: "Detalhes da Triagem - FalAI Doutor" },
@@ -25,7 +27,8 @@ type Source = "patient-triage" | "queue-triage";
 
 function TriageDetailsPage() {
   const params = Route.useParams();
-  const backRoute = params.source === "patient-triage" ? "/totem" : "/painel";
+  const search = Route.useSearch();
+  const backRoute = search.from === "panel" || params.source === "queue-triage" ? "/painel" : "/totem";
   const [details, setDetails] = useState<FinalizedTriageDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

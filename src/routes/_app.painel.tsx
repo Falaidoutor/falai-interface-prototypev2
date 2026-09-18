@@ -321,7 +321,44 @@ function PendingTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+      <div className="space-y-3 p-3 md:hidden">
+        {rows.map((triage) => (
+          <article
+            key={`mobile-pending-${triage.id}`}
+            className="rounded-lg border border-border bg-card p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Senha</div>
+                <div className="mt-1 break-all font-mono text-sm font-semibold text-foreground">
+                  {triage.queueTicket ?? `#${triage.id}`}
+                </div>
+              </div>
+              <RiskBadge value={triage.aiSuggestedRiskClassification} />
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3">
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">Paciente</div>
+                <div className="mt-0.5 truncate text-sm font-medium text-foreground">{triage.patientName}</div>
+                <div className="text-xs text-muted-foreground">
+                  {triage.patientAge} anos · {triage.patientGender}
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">Tempo de espera</div>
+                <div className="mt-0.5 font-mono text-sm text-foreground">{elapsed(triage.createdAt)}</div>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+              <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Aguardando revisão</span>
+              <Button size="sm" onClick={() => onAnalyze(triage)}>Analisar</Button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40 dark:bg-slate-800/45 dark:hover:bg-slate-800/55">
@@ -367,7 +404,8 @@ function PendingTable({
           ))}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -416,7 +454,11 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
                 </div>
               </div>
               <Button asChild variant="outline" size="sm" className="mt-4 w-full gap-2">
-                <Link to="/triagens/$source/$id" params={{ source: detailsSource, id: String(detailsId) }}>
+                <Link
+                  to="/triagens/$source/$id"
+                  params={{ source: detailsSource, id: String(detailsId) }}
+                  search={{ from: "panel" }}
+                >
                   <Eye className="h-4 w-4" />
                   Ver detalhes
                 </Link>
@@ -464,6 +506,7 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
                 <Button asChild variant="outline" size="sm" className="gap-2">
                   <Link
                     to="/triagens/$source/$id"
+                    search={{ from: "panel" }}
                     params={{
                       source: item.source === "patient-triage" ? "patient-triage" : "queue-triage",
                       id: String(

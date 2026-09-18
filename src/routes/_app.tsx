@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useLocation, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
@@ -42,7 +43,9 @@ function AppLayout() {
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
           <AppHeader />
           <main className="flex-1">
-            <Outlet />
+            <div key={`${location.pathname}${location.search}`} className="page-transition">
+              <Outlet />
+            </div>
           </main>
         </SidebarInset>
       </div>
