@@ -158,6 +158,10 @@
   animation: page-enter 180ms ease-out both;
 }
 
+.page-transition-reset {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-transition {
     animation: none;

@@ -14,7 +14,18 @@ export const Route = createFileRoute("/_app")({
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const routeKey = `${location.pathname}${JSON.stringify(location.search)}`;
+  const [pageTransitionClass, setPageTransitionClass] = useState("page-transition");
   const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    setPageTransitionClass("page-transition page-transition-reset");
+    const frame = window.requestAnimationFrame(() => {
+      setPageTransitionClass("page-transition");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [routeKey]);
 
   useEffect(() => {
     if (readAuthSession()) {
@@ -43,10 +54,7 @@ function AppLayout() {
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
           <AppHeader />
           <main className="flex-1">
-            <div
-              key={`${location.pathname}${JSON.stringify(location.search)}`}
-              className="page-transition"
-            >
+            <div className={pageTransitionClass}>
               <Outlet />
             </div>
           </main>
