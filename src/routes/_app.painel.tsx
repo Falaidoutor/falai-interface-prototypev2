@@ -120,13 +120,19 @@ function PainelPage() {
 
     try {
       setError(null);
-      const [pendingRows, queueRows] = await Promise.all([
+      const [pendingResult, queueResult] = await Promise.allSettled([
         listPendingReviewTriages(),
         listMedicalQueueCases(),
       ]);
-      setPendingTriages(pendingRows);
-      setQueueCases(queueRows);
-      return { pendingRows, queueRows };
+      if (pendingResult.status === "fulfilled") setPendingTriages(pendingResult.value);
+      if (queueResult.status === "fulfilled") setQueueCases(queueResult.value);
+      if (pendingResult.status === "rejected" && queueResult.status === "rejected") {
+        throw pendingResult.reason;
+      }
+      return {
+        pendingRows: pendingResult.status === "fulfilled" ? pendingResult.value : pendingTriages,
+        queueRows: queueResult.status === "fulfilled" ? queueResult.value : queueCases,
+      };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível carregar a fila clínica.");
       return null;

@@ -158,14 +158,6 @@ export function PatientAnalysisSheet({ triage, onClose, onValidate }: Props) {
 
               <section>
                 <SectionTitle icon={Brain} title="Confiança & Extração da IA" badge="IA" />
-                {getModelUsage(triage.aiResult) ? (
-                  <div className="mt-3 flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
-                    <span className="text-muted-foreground">Modelo que respondeu</span>
-                    <span className="font-semibold text-foreground">
-                      {getModelUsage(triage.aiResult)}
-                    </span>
-                  </div>
-                ) : null}
                 {loading ? (
                   <div className="mt-3 space-y-2">
                     <Skeleton className="h-4 w-full" />
@@ -421,19 +413,6 @@ function toEsiLevel(value: string | null | undefined): EsiLevel | null {
     return value;
   }
   return null;
-}
-
-function getModelUsage(result: JsonRecord | null): string | null {
-  if (!result) return null;
-  const model = result.modelo_usado;
-  if (typeof model !== "string" || !model.trim()) return null;
-  const labels: Record<string, string> = {
-    "openai/gpt-oss-120b": "GPT OSS 120B",
-    "openai/gpt-oss-20b": "GPT OSS 20B",
-    "qwen/qwen3.8-27b": "Qwen 3.8 27B",
-  };
-  const label = labels[model] ?? model;
-  return result.fallback_modelo_ativado === true ? `${label} · fallback por rate limit` : label;
 }
 
 function shiftLevel(level: EsiLevel, dir: -1 | 1): EsiLevel | null {
