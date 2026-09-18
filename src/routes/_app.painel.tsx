@@ -382,7 +382,51 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+      <div className="space-y-3 p-3 md:hidden">
+        {rows.map((item) => {
+          const detailsSource = item.source === "patient-triage" ? "patient-triage" : "queue-triage";
+          const detailsId = item.source === "patient-triage" ? (item.triageId ?? item.queueId) : item.queueId;
+
+          return (
+            <article
+              key={`mobile-${item.source ?? "queue"}-${item.triageId ?? item.queueId}`}
+              className="rounded-lg border border-border bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Senha</div>
+                  <div className="mt-1 break-all font-mono text-sm font-semibold text-foreground">
+                    {item.queueTicket}
+                  </div>
+                </div>
+                <RiskBadge value={item.classificacao} showDescription />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3">
+                <div className="min-w-0">
+                  <div className="text-xs text-muted-foreground">Paciente</div>
+                  <div className="mt-0.5 truncate text-sm font-medium text-foreground">{item.name}</div>
+                  <div className="text-xs text-muted-foreground">{item.age} anos · {item.gender}</div>
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs text-muted-foreground">Origem</div>
+                  <div className="mt-0.5 text-sm text-foreground">
+                    {item.source === "patient-triage" ? "Triagem assíncrona" : "Fila clínica"}
+                  </div>
+                </div>
+              </div>
+              <Button asChild variant="outline" size="sm" className="mt-4 w-full gap-2">
+                <Link to="/triagens/$source/$id" params={{ source: detailsSource, id: String(detailsId) }}>
+                  <Eye className="h-4 w-4" />
+                  Ver detalhes
+                </Link>
+              </Button>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40 dark:bg-slate-800/45 dark:hover:bg-slate-800/55">
@@ -438,7 +482,8 @@ function AnalyzedTable({ rows }: { rows: MedicalQueueCase[] }) {
           ))}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }
 
