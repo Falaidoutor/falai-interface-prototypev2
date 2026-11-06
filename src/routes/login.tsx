@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Activity, AlertCircle, Lock, LogIn, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -113,6 +113,15 @@ function LoginPage() {
             Entrar
           </Button>
         </form>
+        <Button asChild variant="outline" className="mt-4 h-11 w-full gap-2">
+          <Link to="/prototipo">
+            <Activity className="h-4 w-4" />
+            Protótipo do Projeto
+          </Link>
+        </Button>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Explore o FalAI Doutor sem login, com dados fictícios.
+        </p>
       </section>
     </main>
   );

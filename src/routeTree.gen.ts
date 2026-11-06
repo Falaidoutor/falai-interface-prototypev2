@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrototipoRouteImport } from './routes/prototipo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
@@ -19,6 +20,11 @@ import { Route as AppConfigRouteImport } from './routes/_app.config'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
 import { Route as AppTriagensSourceIdRouteImport } from './routes/_app.triagens.$source.$id'
 
+const PrototipoRoute = PrototipoRouteImport.update({
+  id: '/prototipo',
+  path: '/prototipo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -67,6 +73,7 @@ const AppTriagensSourceIdRoute = AppTriagensSourceIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/prototipo': typeof PrototipoRoute
   '/analytics': typeof AppAnalyticsRoute
   '/config': typeof AppConfigRoute
   '/painel': typeof AppPainelRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/prototipo': typeof PrototipoRoute
   '/analytics': typeof AppAnalyticsRoute
   '/config': typeof AppConfigRoute
   '/painel': typeof AppPainelRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/prototipo': typeof PrototipoRoute
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/config': typeof AppConfigRoute
   '/_app/painel': typeof AppPainelRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/prototipo'
     | '/analytics'
     | '/config'
     | '/painel'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/prototipo'
     | '/analytics'
     | '/config'
     | '/painel'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/login'
+    | '/prototipo'
     | '/_app/analytics'
     | '/_app/config'
     | '/_app/painel'
@@ -133,10 +145,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PrototipoRoute: typeof PrototipoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/prototipo': {
+      id: '/prototipo'
+      path: '/prototipo'
+      fullPath: '/prototipo'
+      preLoaderRoute: typeof PrototipoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -228,6 +248,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  PrototipoRoute: PrototipoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
